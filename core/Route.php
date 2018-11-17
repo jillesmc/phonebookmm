@@ -107,9 +107,7 @@ class Route
                     $controller->$action($this->getRequest());
             }
         } else {
-            http_response_code(404);
-            header("Content-Type: application/json; charset=UTF-8");
-            echo json_encode(['message' => "404 Not Found"]);
+            Container::pageNotFound();
         }
     }
 }
