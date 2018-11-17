@@ -79,9 +79,10 @@ abstract class BaseModel
         ];
     }
 
-    public function update(array $data, $id){
+    public function update(array $data, $id)
+    {
         $data = $this->prepareDataUpdate($data);
-        $query = "UPDATE {$this->table} SET {$data[0]} WHERE id=:id";
+        $query = "UPDATE {$this->table} SET {$data[0]},updated_at=NOW() WHERE id=:id";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(':id', $id);
         for ($i = 0; $i < count($data[1]); $i++) {
@@ -113,7 +114,8 @@ abstract class BaseModel
         ];
     }
 
-    public function delete($id){
+    public function delete($id)
+    {
         $query = "DELETE FROM {$this->table} WHERE id=:id";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(":id", $id);

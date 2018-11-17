@@ -8,12 +8,13 @@ class User extends BaseModel
 {
     protected $table = 'users';
 
-    public function find($id){
-        $query = "SELECT * FROM {$this->table} where id={$id}";
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetchAll();
-        $stmt->closeCursor();
-        return $result;
+    public function rules(){
+        return [
+            'name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'phone',
+            'password' => 'required',
+        ];
     }
+
 }

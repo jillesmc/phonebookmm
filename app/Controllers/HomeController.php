@@ -2,8 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Models\User;
 use Core\BaseController;
 use Core\Container;
+use Core\Database;
+use Core\Validator;
 
 class HomeController extends BaseController
 {
@@ -12,36 +15,49 @@ class HomeController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->user = Container::getModel('User');
-//        $this->user = new User(Database::getDataBase());
+//        $this->user = Container::getModel('User');
+        $this->user = new User(Database::getDataBase());
     }
 
     public function index()
     {
-        $this->setPageTitle("Titulo");
-
+//        $this->setPageTitle("Titulo");
+//
+//        $data = [
+//            'email' => 'seu@email.com',
+//            'password' => 'agoravai',
+//        ];
+//
+//        if ($this->user->create($data)) {
+//            var_dump($this->user->all());
+//        }
+//
+//        if ($this->user->create($data)) {
+//            var_dump($this->user->all());
+//        }
+//
+//        $data = [
+//            'password' => 'atualizou',
+//        ];
+//        if ($this->user->update($data, 2)) {
+//            var_dump($this->user->all());
+//        }
+//
+//        if ($this->user->delete(1)) {
+//            var_dump($this->user->all());
+//        }
         $data = [
-            'email' => 'seu@email.com',
-            'password' => 'agoravai',
+            'name' => 'Jilles Moraes Cardoso',
+            'email' => 'jillesmc@gmail.com',
+            'zone_code' => substr('35 7222-2252', 0, 2),
+            'phone' => '35 7222-2252',
+            'password' => 'asdfasdfasdfasdfasdfasdf',
         ];
 
-        if ($this->user->create($data)) {
-            var_dump($this->user->all());
-        }
-
-        if ($this->user->create($data)) {
-            var_dump($this->user->all());
-        }
-
-        $data = [
-            'password' => 'atualizou',
-        ];
-        if ($this->user->update($data, 2)) {
-            var_dump($this->user->all());
-        }
-
-        if ($this->user->delete(1)) {
-            var_dump($this->user->all());
+        if ($errors = Validator::make($data, $this->user->rules())) {
+            var_dump($errors);
+        } else {
+            echo 'ok';
         }
 
 
