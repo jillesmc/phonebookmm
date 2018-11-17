@@ -39,6 +39,17 @@ abstract class BaseModel
         return $result;
     }
 
+    public function findByField($field, $value)
+    {
+        $query = "SELECT * FROM {$this->table} WHERE {$field}=:{$field}";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(":{$field}", $value);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        $stmt->closeCursor();
+        return $result;
+    }
+
     public function create(array $data)
     {
         $data = $this->prepareDataInsert($data);

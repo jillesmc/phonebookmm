@@ -48,6 +48,18 @@ class Validator
                     $errors["$ruleKey"] = "O campo {$ruleKey} dete ter um máxmo de {$item[1]} caracteres";
                 }
                 break;
+            case 'unique':
+                $objModel = "\\App\\Models\\" . $item[1];
+//                $model = new $objModel(Database::getDataBase());
+                $model = Container::getModel($item[1]);
+                $find = $model->findByField($ruleKey, $dataValue);
+                if ($find && $find->{$item[2]}) {
+                    if ($item[3] && $find->id == $item[3]) {
+                        break;
+                    }
+                    $errors["$ruleKey"] = "{$ruleKey} já registrado no sistema";
+                }
+                break;
             default:
                 break;
         }
