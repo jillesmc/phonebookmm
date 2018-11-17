@@ -1,7 +1,7 @@
 <?php
 return [
 
-    'driver' => 'sqlite',
+    'driver' => 'mysql',
     'sqlite' => [
         'database' => 'database.db'
     ],
@@ -9,7 +9,7 @@ return [
         'host' => 'localhost',
         'database' => 'phonebook',
         'user' => 'root',
-        'pass' => '12345',
+        'pass' => '',
         'charset' => 'utf8',
         'collation' => 'utf8_unicode_ci'
     ]
