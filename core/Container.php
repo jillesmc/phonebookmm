@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jilles
- * Date: 16/11/18
- * Time: 18:37
- */
 
 namespace Core;
 
@@ -15,6 +9,12 @@ class Container
     {
         $controller = "App\\Controllers\\" . $controller;
         return new $controller;
+    }
+
+    public static function getModel($model) :BaseModel
+    {
+        $objModel = "\\App\\Models\\" . $model;
+        return new $objModel(Database::getDataBase());
     }
 
     public static function pageNotFound()

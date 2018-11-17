@@ -105,6 +105,7 @@ class Route
                     break;
                 default:
                     $controller->$action($this->getRequest());
+                    break;
             }
         } else {
             Container::pageNotFound();

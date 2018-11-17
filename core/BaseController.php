@@ -20,9 +20,9 @@ abstract class BaseController
         $this->viewPath = $viewPath;
         $this->layoutPath = $layoutPath;
         if ($layoutPath) {
-            $this->layout();
+            return $this->layout();
         } else {
-            $this->content();
+            return $this->content();
         }
     }
 
