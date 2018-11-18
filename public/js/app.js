@@ -20,25 +20,36 @@ var AppHome = {
         search_cleaner.toggle(Boolean(searchInput.val()));
         search_cleaner.click(function () {
             searchInput.val('').focus();
+            AppHome.searchContacts($(this).val());
             $(this).hide();
         });
     },
     searchContacts: function (query) {
+        // @to-do pegar do localStorage
+        let user_id = 31;
+
         let loader = $('#loader');
         let tableBody = $('.contacts-table tbody');
         tableBody.html('');
         loader.show();
+
         $.ajax({
-            method: "GET",
-            url: "/temp-ajax-returns/search-return.php",
+            type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            data: {'searchQuery': query},
-        })
-            .done(function (response) {
+            data: {'q': query},
+            url: "/users/" + user_id + "/contacts",
+            success: function (response) {
                 loader.hide();
                 AppHome.buildContactTable(response);
-            });
+            },
+            error: function (xhr, textStatus) {
+                loader.hide();
+                AppHome.flashAlertMessage([
+                    ['success', 'Sua lista de contatos está vazia. Vamos começar']
+                ]);
+            }
+        });
     },
     floatTableHeader: function () {
         let table = $('table.contacts-table');
@@ -60,7 +71,7 @@ var AppHome = {
             initials += explodedName[explodedName.length - 1].substr(0, 1);
             i = i == 12 ? 0 : i;
 
-            let contactPhone = (contact.phones !== null ? contact.phones.phone : '');
+            let contactPhone = (contact.phone !== null ? contact.phone : '');
             let anchorCharacter = (firstCharacter != lastTimeFirstCharacter ? firstCharacter : '');
 
             contactRowHtml += '<tr' +
@@ -159,30 +170,41 @@ var AppHome = {
         });
     },
     loadContacts: function () {
+        // @to-do pegar do localStorage
+        let user_id = 31;
         let loader = $('#loader');
         loader.show();
         $.ajax({
-            method: "GET",
-            url: "/temp-ajax-returns/contacts.php",
+            type: 'GET',
             contentType: "application/json",
             dataType: "json",
-        })
-            .done(function (response) {
+            url: "/users/" + user_id + "/contacts",
+            success: function (response) {
                 loader.hide();
+                if (response.length == 0) {
+                    AppHome.flashAlertMessage([
+                        ['success', 'Sua lista de contatos está vazia. Vamos começar']
+                    ]);
+                }
                 AppHome.buildContactTable(response);
-            });
+            },
+            error: function (xhr, textStatus) {
+                loader.hide();
+
+            }
+        });
+
     },
     updateEditFormFields: function () {
         let contactId = sessionStorage.getItem('contactId');
+        // @to-do pegar do local storage
+        let userId = 31;
         $.ajax({
-            method: "GET",
-            url: "/temp-ajax-returns/contact.php",
+            type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            data: {id: contactId},
-        })
-            .done(function (response) {
-
+            url: "/users/" + userId + "/contacts/" + contactId,
+            success: function (response) {
                 let editContactForm = $('#editContactForm');
                 let addMorePhoneButton = $('.form-contact__btn--add-more-phones');
 
@@ -200,28 +222,37 @@ var AppHome = {
                     editContactForm.find('input[name="inputPhone[' + index + ']"]').val(response.phones[i].phone);
 
                 }
-            });
+            },
+            error: function (xhr, textStatus) {
+                AppHome.flashAlertMessage([
+                    ['error', 'Algo não deu certo']
+                ]);
+            }
+        });
     },
     updateModalContent: function (modal) {
         let contactId = sessionStorage.getItem('contactId');
+        // @to-do pegar do local storage
+        let userId = 31;
         $.ajax({
-            method: "GET",
-            url: "/temp-ajax-returns/contact.php",
+            type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            data: {id: contactId},
-        })
-            .done(function (response) {
+            url: "/users/" + userId + "/contacts/" + contactId,
+            success: function (response) {
                 let phonesNotesHtml = '';
 
                 phonesNotesHtml += '<div class="mb-4">' +
                     '<h5>' + response.name + '</h5>' +
-                    '</div>' +
-                    '<p>' +
-                    '<div class="float-left pr-3 text-right" ><span class="oi oi-envelope-closed' +
-                    ' text-muted"></span></div>' +
-                    '<a href="mailto:' + response.email + '" class="">' + response.email + '</a>' +
-                    '</p>'
+                    '</div>';
+
+                if (response.email) {
+                    phonesNotesHtml += '<p>' +
+                        '<div class="float-left pr-3 text-right" ><span class="oi oi-envelope-closed' +
+                        ' text-muted"></span></div>' +
+                        '<a href="mailto:' + response.email + '" class="">' + response.email + '</a>' +
+                        '</p>';
+                }
 
                 for (let i = 0; i < response.phones.length; i++) {
                     let numberOnlyPhone = response.phones[i].phone.replace(' ', '').replace('-', '');
@@ -234,14 +265,22 @@ var AppHome = {
                         '</p>';
                 }
 
-                phonesNotesHtml += '<p>' +
-                    '<div class="float-left pr-3 text-right"><span class="oi oi-book' +
-                    ' text-muted"></span></div>' +
-                    response.note +
-                    '</p>';
+                if (response.note) {
+                    phonesNotesHtml += '<p>' +
+                        '<div class="float-left pr-3 text-right"><span class="oi oi-book' +
+                        ' text-muted"></span></div>' +
+                        response.note +
+                        '</p>';
+                }
 
                 modal.find('.view-contact-data').html(phonesNotesHtml);
-            });
+            },
+            error: function (xhr, textStatus) {
+                AppHome.flashAlertMessage([
+                    ['error', 'Algo não deu certo']
+                ]);
+            }
+        });
     },
     loadDataForViewContactModal: function () {
         let viewContactModal = $('#view-contact-modal');
@@ -388,11 +427,30 @@ var ContactForms = {
     deleteContactHandle: function () {
         $('#deleteContactButton').click(function (event) {
             let deleteContactModal = $('#delete-contact-modal');
-            AppHome.loadContacts();
-            deleteContactModal.modal('hide');
-            AppHome.flashAlertMessage([
-                ['success', 'Contato removido com sucesso']
-            ])
+            let contactId = sessionStorage.getItem('contactId');
+            // @to-do pegar do local storage
+            let userId = 31;
+
+            $.ajax({
+                type: 'DELETE',
+                contentType: "application/json",
+                dataType: "json",
+                url: "/users/" + userId + "/contacts/" + contactId,
+                success: function (response) {
+                    deleteContactModal.modal('hide');
+                    AppHome.loadContacts();
+                    AppHome.flashAlertMessage([
+                        ['success', 'Contato removido com sucesso']
+                    ])
+                },
+                error: function (xhr, textStatus) {
+                    AppHome.flashAlertMessage([
+                        ['error', 'Algo não deu certo']
+                    ]);
+                }
+            });
+
+
         });
     },
     attachDelete: function () {
@@ -451,21 +509,56 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
-                // @to-do trocar para ajax
-                let viewModal = $('#view-contact-modal');
-                let addModal = $('#add-contact-modal');
+                // @to-do chamar do localStorage
 
-                AppHome.loadContacts();
-                addModal.removeClass('fade');
-                viewModal.removeClass('fade');
-                addModal.modal('hide');
-                viewModal.modal('show');
-                addModal.addClass('fade');
-                viewModal.addClass('fade');
+                let user_id = 31;
+                let phones = [];
 
-                AppHome.flashAlertMessage([
-                    ['success', 'Contato inserido com sucesso']
-                ]);
+                $('input[name^="inputPhone"]').each(function () {
+                    phones.push($(this).val());
+                });
+
+                console.log(JSON.stringify({
+                    name: form.name.value,
+                    email: form.email.value,
+                    phones: JSON.stringify(phones),
+                    note: form.note.value
+                }));
+
+
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json",
+                    url: "/users/" + user_id + "/contacts",
+                    data: JSON.stringify({
+                        name: form.name.value,
+                        email: form.email.value,
+                        phones: phones,
+                        note: form.note.value
+                    }),
+                    success: function (response) {
+                        sessionStorage.setItem('contactId', response.contactId);
+
+                        AppHome.flashAlertMessage([
+                            ['success', 'Contato criado com sucesso']
+                        ]);
+
+                        let viewModal = $('#view-contact-modal');
+                        let addModal = $('#add-contact-modal');
+
+                        AppHome.loadContacts();
+                        addModal.removeClass('fade');
+                        viewModal.removeClass('fade');
+                        addModal.modal('hide');
+                        viewModal.modal('show');
+                        addModal.addClass('fade');
+                        viewModal.addClass('fade');
+
+                    },
+                    complete: function (xhr, textStatus) {
+                        console.log(xhr.status);
+                    }
+                });
             }
         });
     },

@@ -65,7 +65,7 @@ abstract class BaseModel
         return $result;
     }
 
-    private function prepareDataInsert(array $data)
+    protected function prepareDataInsert(array $data)
     {
         $strKeys = "";
         $strBinds = "";
@@ -105,7 +105,7 @@ abstract class BaseModel
 
     }
 
-    private function prepareDataUpdate(array $data)
+    protected function prepareDataUpdate(array $data)
     {
         $strKeysBinds = "";
         $binds = [];

@@ -21,6 +21,11 @@ class UserController extends BaseController
         $this->user = new User(Database::getDataBase());
     }
 
+    public function show($user_id)
+    {
+
+    }
+
     public function store($request)
     {
         $data = [
@@ -42,18 +47,9 @@ class UserController extends BaseController
         try {
             $this->user->create($data);
         } catch (\Exception $e) {
-            switch ($e->getCode()) {
-                case 23000:
-                    return Response::json(Response::CONFLICT, [
-                        'error' => 'Usuário já existe'
-                    ]);
-                    break;
-                default:
-                    return Response::json(Response::INTERNAL_SERVER_ERROR, [
-                        'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
-                    ]);
-                    break;
-            }
+            return Response::json(Response::INTERNAL_SERVER_ERROR, [
+                'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
+            ]);
         }
     }
 

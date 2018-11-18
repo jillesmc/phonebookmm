@@ -2,24 +2,21 @@
 
 namespace App\Controllers;
 
-use App\Models\User;
+use App\Models\Contact;
 use Core\Auth;
 use Core\BaseController;
-use Core\Container;
 use Core\Database;
 use Core\Redirect;
 use Core\Session;
-use Core\Validator;
 
 class AppController extends BaseController
 {
-    private $user;
+    private $contact;
 
     public function __construct()
     {
         parent::__construct();
-//        $this->user = Container::getModel('User');
-//        $this->user = new User(Database::getDataBase());
+        $this->contact = new Contact(Database::getDataBase());
     }
 
     public function index()

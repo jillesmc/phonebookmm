@@ -15,7 +15,7 @@ class Validator
                 }
                 break;
             case 'email':
-                if (!filter_var($dataValue, FILTER_VALIDATE_EMAIL)) {
+                if ($dataValue!== '' && !filter_var($dataValue, FILTER_VALIDATE_EMAIL)) {
                     $errors["$ruleKey"] = "O campo {$ruleKey} não é válido";
                 }
                 break;
