@@ -1,0 +1,69 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="inputName" required>Nome</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><span
+                                    class="form-contact__field-icon oi oi-person"></span></span>
+                    </div>
+                    <input type="text" name="name" class="form-control" placeholder="Insira o nome" autofocus required>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="inputEmail">Email</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">
+                            <span class="form-contact__field-icon oi oi-envelope-closed"></span>
+                        </span>
+                    </div>
+                    <input type="email" name="email" class="form-control" placeholder="email@dominio.com.br">
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="form-contact__dynamic-phone">
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                        <span class="input-group-text">
+                            <span class="form-contact__field-icon oi oi-phone"></span>
+                        </span>
+                        </div>
+                        <input type="text" name="inputPhone[]" class="form-control" placeholder="XX XXXXX-XXXX">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 text-right">
+            <button type="button" class="form-contact__btn--add-more-phones btn btn-link">+ Adicionar outro</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="inputPhone">Anotações</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">
+                             <span class="form-contact__field-icon oi oi-book"></span>
+                        </span>
+                    </div>
+                    <textarea class="form-control" name="note" aria-label="With textarea" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

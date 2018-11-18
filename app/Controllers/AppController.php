@@ -29,7 +29,10 @@ class AppController extends BaseController
             Session::destroy('user');
             Redirect::route('/login');
         }
-        var_dump(Session::get('user'));
+//        var_dump(Session::get('user'));
+
+        $this->setPageTitle('App');
+        return $this->renderView('app/index', 'layout-app');
     }
 
 }

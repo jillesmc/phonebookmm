@@ -1,0 +1,79 @@
+<div id="top-bar" class="container-fluid p-3 px-md-4 fixed-top bg-white border-bottom shadow-sm">
+    <div class="row no-gutters">
+        <div class="logo col-1 col-sm-3 col-md-4 text-left">
+            <img src="/images/logo-horizontal.svg" alt="" height="34" class="logo__image--full d-none d-md-block">
+            <img src="/images/logo-symbol.svg" alt="" height="34" class="logo__image--icon-only d-block d-md-none">
+
+        </div>
+        <div class="col-10 col-sm-6 col-md-4">
+            <form action="/temp-ajax-returns/test-form.php" class="search form-inline">
+                <div class="btn-group col-12">
+                    <input id="inputSearch" class="search__input form-control form-control-sm col-12" type="text"
+                           placeholder="Busque um nome, telefone...">
+
+                    <span class="search__clear-button oi oi-x" style="display: none;"></span>
+                    <img class="search__magnify-icon" src="/images/magnifying-glass.svg" alt="Busca"
+                         aria-hidden="true">
+                </div>
+            </form>
+        </div>
+        <div class="col-1 col-sm-3 col-md-4 text-right">
+            <div class="dropdown">
+                <button href="#" class="btn btn-light btn-sm" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false" id="dropdown-user-account">
+                    <span class="d-none d-sm-inline-block">Jilles</span>
+                    <span class="oi oi-person d-inline-block d-sm-none"></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-user-account">
+                    <a class="dropdown-item" data-toggle="modal" data-target="#account-info-modal">Minha conta</a>
+                    <a class="dropdown-item" href="/signin.php">Sair</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr class="table__header-line--below d-none d-sm-block">
+<div class="container">
+    <div class="row">
+        <div class="col-12 mx-auto">
+
+            <div class="table-responsive">
+                <table class="contacts-table table table-borderless table-hover">
+                    <thead>
+                    <tr class="contacts-table__header d-none d-sm-table-row">
+                        <th scope="col"></th>
+                        <th></th>
+                        <th>Nome</th>
+                        <th class="d-none d-sm-table-cell" scope="col">Telefone</th>
+                        <th class="d-none d-md-table-cell" scope="col">E-mail</th>
+                        <th class="d-none d-sm-table-cell py-2 pl-0 text-right" scope="col">
+                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                                    data-target="#add-contact-modal">
+                                <span class="oi oi-plus"></span> Novo contato
+                            </button>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+
+
+<button type="button" class="button-add-contact btn btn-success btn-circle d-block d-sm-none"
+        data-toggle="modal" data-target="#add-contact-modal">
+    <span class="oi oi-plus"></span>
+</button>
+
+<div id="loader" class="loading">
+    <img src="/images/loading-spinner.svg" alt="">
+</div>
+
+

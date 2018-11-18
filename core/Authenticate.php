@@ -6,22 +6,12 @@ trait Authenticate
 {
     public function login()
     {
-        // @to-do mudar isso aqui para JWT
-//        if (Session::get('auth')) {
-//            Redirect::route('/app');
-//        }
-
         $this->setPageTitle('Entrar');
         return $this->renderView('/user/login', 'layout-login');
     }
 
     public function register()
     {
-        // @to-do mudar isso aqui para JWT
-//        if(Session::get('user')){
-//            Redirect::route('/app');
-//        }
-
         $this->setPageTitle('Registrar');
         return $this->renderView('/user/register', 'layout-register');
     }

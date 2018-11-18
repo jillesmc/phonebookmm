@@ -1,0 +1,41 @@
+<!-- Modal -->
+<div class="modal fade modal-fullscreen" id="view-contact-modal" tabindex="-1" role="dialog"
+     aria-labelledby="modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <h5 class="modal-title" id="modalLabel">
+                    Dados do contato
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="view-contact-data col-12">
+
+                            <div class="text-center">
+                                <img src="/images/loading-spinner.svg" alt="" width="100">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="view-contact-modal__remove-button" type="button"
+                        data-id=""
+                        class="btn btn-danger mr-auto">Excluir
+                </button>
+                <button id="view-contact-modal__edit-button" type="button"
+                        data-id=""
+                        class="btn btn-dark">Editar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
