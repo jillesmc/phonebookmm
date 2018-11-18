@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use Core\Authenticate;
 use Core\BaseController;
 use Core\Database;
 use Core\Response;
@@ -10,22 +11,14 @@ use Core\Validator;
 
 class UserController extends BaseController
 {
+    use Authenticate;
+
     private $user;
 
     public function __construct()
     {
         parent::__construct();
         $this->user = new User(Database::getDataBase());
-    }
-
-    public function login()
-    {
-
-    }
-
-    public function register()
-    {
-
     }
 
     public function store($request)
@@ -61,7 +54,6 @@ class UserController extends BaseController
                     ]);
                     break;
             }
-
         }
     }
 

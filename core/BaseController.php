@@ -13,6 +13,11 @@ abstract class BaseController
     public function __construct()
     {
         $this->view = new \stdClass;
+        $this->auth = new Auth;
+    }
+
+    public function forbidden(){
+        return Redirect::route('/login');
     }
 
     protected function renderView($viewPath, $layoutPath = null)

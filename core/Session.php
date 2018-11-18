@@ -13,7 +13,7 @@ class Session
 
     public static function get($key)
     {
-        if ($_SESSION[$key]) {
+        if ($_SESSION && $_SESSION[$key]) {
             return $_SESSION[$key];
         }
         return false;

@@ -18,7 +18,11 @@ class Route
         $parsedRoutes = [];
         foreach ($routes as $route) {
             $controllerActionArray = explode('@', $route[2]);
-            $r = [$route[0], $route[1], $controllerActionArray[0], $controllerActionArray[1]];
+            if (isset($route[3])) {
+                $r = [$route[0], $route[1], $controllerActionArray[0], $controllerActionArray[1], $route[3]];
+            } else {
+                $r = [$route[0], $route[1], $controllerActionArray[0], $controllerActionArray[1]];
+            }
             $parsedRoutes[] = $r;
         };
         $this->routes = $parsedRoutes;
@@ -86,6 +90,9 @@ class Route
                 $routeFound = true;
                 $controller = $route[2];
                 $action = $route[3];
+                if(isset($route[4]) && Auth::check()){
+                    $action = 'forbidden';
+                }
                 break;
             }
         }
