@@ -126,6 +126,61 @@ class Contact extends BaseModel
         }
     }
 
+    public function update(array $data, $id)
+    {
+        $data = $this->prepareDataUpdate($data);
+        $query = "UPDATE {$this->table} SET {$data[0]},updated_at=NOW() WHERE id=:id";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':id', $id);
+        for ($i = 0; $i < count($data[1]); $i++) {
+            $stmt->bindValue("{$data[1][$i]}", $data[2][$i]);
+        }
+        $result = $stmt->execute();
+        $stmt->closeCursor();
+        return $result;
+
+    }
+
+    public function updateWithPhones($users_id, $contact_id, array $contact, array $phones = [])
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $data = $this->prepareDataUpdate($contact);
+            $query = "UPDATE {$this->table} SET {$data[0]},updated_at=NOW() WHERE id=:id AND users_id=:users_id";
+            $stmt = $this->pdo->prepare($query);
+
+            $stmt->bindValue(":id", $contact_id);
+            $stmt->bindValue(":users_id", $users_id);
+            for ($i = 0; $i < count($data[1]); $i++) {
+                $stmt->bindValue("{$data[1][$i]}", $data[2][$i]);
+            }
+            $stmt->execute();
+
+            if (!empty($phones)) {
+                $this->deleteRelatedPhones($contact_id);
+                foreach ($phones as $phone) {
+                    $this->createRelatedPhone($contact_id, $phone);
+                }
+            }
+
+            $this->pdo->commit();
+            $stmt->closeCursor();
+
+            return $contact_id;
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    private function deleteRelatedPhones($contacts_id)
+    {
+        $query = "DELETE FROM {$this->phonesTable} WHERE contacts_id=:contacts_id";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(":contacts_id", $contacts_id);
+        $stmt->execute();
+    }
+
     private function createRelatedPhone($contacts_id, array $phones)
     {
         $data = $this->prepareDataInsert($phones);

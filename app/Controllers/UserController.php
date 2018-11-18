@@ -23,7 +23,11 @@ class UserController extends BaseController
 
     public function show($user_id)
     {
-
+        $contact = $this->user->find($user_id);
+        if (!$contact) {
+            return Response::json(Response::NOT_FOUND, []);
+        }
+        return Response::json(Response::OK, $contact);
     }
 
     public function store($request)
@@ -55,6 +59,14 @@ class UserController extends BaseController
 
     public function update($user_id, $request)
     {
+        $contact = $this->user->find($user_id);
+
+        if (!password_verify($request->post->passwordPrevious, $contact->password)) {
+            return Response::json(Response::BAD_REQUEST, [
+                'error' => 'Senha antiga incorreta'
+            ]);
+        }
+
         $data = [
             'id' => $user_id,
             'name' => $request->post->name,

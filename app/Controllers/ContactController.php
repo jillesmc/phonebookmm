@@ -38,7 +38,7 @@ class ContactController extends BaseController
     {
         $contact = $this->contact->findUserContact($user_id, $contact_id);
         if (!$contact) {
-            return Response::json(Response::NOT_FOUND,[]);
+            return Response::json(Response::NOT_FOUND);
         }
 
         $contact->phones = $this->contact->getContactPhones($contact_id);
@@ -98,8 +98,55 @@ class ContactController extends BaseController
         }
     }
 
-    public function update($user_id, $contact_id)
+    public function update($user_id, $contact_id, $request)
     {
+        $contact = [
+            'name' => $request->post->name,
+            'email' => $request->post->email,
+            'note' => $request->post->note,
+        ];
+
+        $phones = [];
+        if (!empty($request->post->phones)) {
+
+            foreach ($request->post->phones as $phone) {
+                if ($phone != null && $phone !== '') {
+                    $phones[] = [
+                        'zone_code' => substr($phone, 0, 2),
+                        'phone' => $phone
+                    ];
+                }
+            }
+        }
+
+        if ($errors = Validator::make($contact, $this->contact->rulesCreate())) {
+            return Response::json(Response::BAD_REQUEST, [
+                'error' => 'Algo não deu certo na validação',
+                'fields' => $errors
+            ]);
+        }
+
+        if (!empty($phones)) {
+            foreach ($phones as $phone) {
+                if ($errors = Validator::make($phone, $this->phone->rulesCreate())) {
+                    return Response::json(Response::BAD_REQUEST, [
+                        'error' => 'Algo não deu certo na validação dos telefones',
+                        'fields' => $errors
+                    ]);
+                }
+            }
+        }
+
+        try {
+            $contact_id = $this->contact->updateWithPhones($user_id, $contact_id, $contact, $phones);
+            return Response::json(Response::OK, [
+                'contactId' => $contact_id
+            ]);
+        } catch (\Exception $e) {
+            return Response::json(Response::INTERNAL_SERVER_ERROR, [
+                'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function destroy($user_id, $contact_id)

@@ -15,7 +15,7 @@ class Response
     CONST CONFLICT = 409;
     CONST INTERNAL_SERVER_ERROR= 500;
 
-    public static function json($statusCode, array $messageArray = [])
+    public static function json($statusCode, $messageArray = [])
     {
         http_response_code($statusCode);
         header("Content-Type: application/json; charset=UTF-8");

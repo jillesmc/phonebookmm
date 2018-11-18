@@ -8,6 +8,7 @@ var AppHome = {
         AppHome.loadDataForViewContactModal();
         AppHome.loadDataForEditContactModal();
         AppHome.loadDataForDeleteContactModal();
+        AppHome.loadDataForAccountInfoModal();
     },
     prepareSearchField: function () {
         let searchInput = $("#inputSearch");
@@ -68,7 +69,9 @@ var AppHome = {
             firstCharacter = contact.name.substr(0, 1).toUpperCase();
             let explodedName = contact.name.split(' ');
             let initials = explodedName[0].substr(0, 1);
-            initials += explodedName[explodedName.length - 1].substr(0, 1);
+            if (explodedName.length > 1) {
+                initials += explodedName[explodedName.length - 1].substr(0, 1);
+            }
             i = i == 12 ? 0 : i;
 
             let contactPhone = (contact.phone !== null ? contact.phone : '');
@@ -225,7 +228,49 @@ var AppHome = {
             },
             error: function (xhr, textStatus) {
                 AppHome.flashAlertMessage([
-                    ['error', 'Algo não deu certo']
+                    ['danger', 'Algo não deu certo']
+                ]);
+            }
+        });
+    },
+    updateAccountFormFields: function () {
+        // @to-do pegar do local storage
+        let userId = 31;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + userId,
+            success: function (response) {
+                let accountInfoForm = $('#accountInfoForm');
+
+                accountInfoForm.find('input[name="name"]').val(response.name);
+                accountInfoForm.find('input[name="email"]').val(response.email);
+                accountInfoForm.find('input[name="phone"]').val(response.phone);
+
+                accountInfoForm.find('input[name="password"]').val('');
+                accountInfoForm.find('input[name="passwordPrevious"]').val('');
+                accountInfoForm.find('input[name="passwordConfirm"]').val('');
+
+                accountInfoForm.find('input[name="password"]').removeAttr('aria-invalid');
+                accountInfoForm.find('input[name="password"]').removeAttr('aria-describedby');
+                accountInfoForm.find('input[name="password"]').removeClass('is-invalid');
+                accountInfoForm.find('input[name="password"]').next('small').remove();
+
+                accountInfoForm.find('input[name="passwordPrevious"]').removeAttr('aria-invalid');
+                accountInfoForm.find('input[name="passwordPrevious"]').removeAttr('aria-describedby');
+                accountInfoForm.find('input[name="passwordPrevious"]').removeClass('is-invalid');
+                accountInfoForm.find('input[name="passwordPrevious"]').next('small').remove();
+
+                accountInfoForm.find('input[name="passwordConfirm"]').removeAttr('aria-invalid');
+                accountInfoForm.find('input[name="passwordConfirm"]').removeAttr('aria-describedby');
+                accountInfoForm.find('input[name="passwordConfirm"]').removeClass('is-invalid');
+                accountInfoForm.find('input[name="passwordConfirm"]').next('small').remove();
+
+            },
+            error: function (xhr, textStatus) {
+                AppHome.flashAlertMessage([
+                    ['danger', 'Algo não deu certo']
                 ]);
             }
         });
@@ -277,7 +322,7 @@ var AppHome = {
             },
             error: function (xhr, textStatus) {
                 AppHome.flashAlertMessage([
-                    ['error', 'Algo não deu certo']
+                    ['danger', 'Algo não deu certo']
                 ]);
             }
         });
@@ -316,6 +361,14 @@ var AppHome = {
                 sessionStorage.setItem('contactId', dataContainer.data('id'));
             }
             AppHome.updateModalContent(modal);
+        });
+    },
+    loadDataForAccountInfoModal: function () {
+
+        let accountInfoModal = $('#account-info-modal');
+        accountInfoModal.on('show.bs.modal', function (event) {
+
+            AppHome.updateAccountFormFields();
         });
     },
     resetModalAfterHide: function () {
@@ -361,7 +414,8 @@ var AppHome = {
             $(formElement).find('input[name="email"]').removeClass('is-invalid');
             $(formElement).find('input[name="email"]').next('small').remove();
         });
-    },
+    }
+
 };
 
 /*
@@ -445,7 +499,7 @@ var ContactForms = {
                 },
                 error: function (xhr, textStatus) {
                     AppHome.flashAlertMessage([
-                        ['error', 'Algo não deu certo']
+                        ['danger', 'Algo não deu certo']
                     ]);
                 }
             });
@@ -510,21 +564,12 @@ var ContactForms = {
             },
             submitHandler: function (form) {
                 // @to-do chamar do localStorage
-
                 let user_id = 31;
                 let phones = [];
 
-                $('input[name^="inputPhone"]').each(function () {
+                $(form).find('input[name^="inputPhone"]').each(function () {
                     phones.push($(this).val());
                 });
-
-                console.log(JSON.stringify({
-                    name: form.name.value,
-                    email: form.email.value,
-                    phones: JSON.stringify(phones),
-                    note: form.note.value
-                }));
-
 
                 $.ajax({
                     type: 'POST',
@@ -601,23 +646,48 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
-                // @to-do trocar para ajax
+                let contactId = sessionStorage.getItem('contactId');
+                // @to-do chamar do localStorage
+                let user_id = 31;
+                let phones = [];
 
-                // form.submit();
+                $(form).find('input[name^="inputPhone"]').each(function () {
+                    phones.push($(this).val());
+                });
 
-                let viewModal = $('#view-contact-modal');
-                let editModal = $('#edit-contact-modal');
+                $.ajax({
+                    type: 'PUT',
+                    contentType: "application/json",
+                    url: "/users/" + user_id + "/contacts/" + contactId,
+                    data: JSON.stringify({
+                        name: form.name.value,
+                        email: form.email.value,
+                        phones: phones,
+                        note: form.note.value
+                    }),
+                    success: function (response) {
+                        sessionStorage.setItem('contactId', response.contactId);
 
-                AppHome.loadContacts();
-                editModal.removeClass('fade');
-                viewModal.removeClass('fade');
-                editModal.modal('hide');
-                viewModal.modal('show');
-                editModal.addClass('fade');
-                viewModal.addClass('fade');
-                AppHome.flashAlertMessage([
-                    ['success', 'Contato editado com sucesso']
-                ]);
+                        AppHome.flashAlertMessage([
+                            ['success', 'Contato editado com sucesso']
+                        ]);
+
+                        let viewModal = $('#view-contact-modal');
+                        let editModal = $('#edit-contact-modal');
+
+                        AppHome.loadContacts();
+                        editModal.removeClass('fade');
+                        viewModal.removeClass('fade');
+                        editModal.modal('hide');
+                        viewModal.modal('show');
+                        editModal.addClass('fade');
+                        viewModal.addClass('fade');
+
+                    },
+                    complete: function (xhr, textStatus) {
+                        console.log(xhr.status);
+                    }
+                });
             }
         });
     },
@@ -671,12 +741,42 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
-                // @to-do trocar para ajax - alert(registrado com sucesso, você será redirecionado)
-                let accountInfoModal = $('#account-info-modal');
-                accountInfoModal.modal('hide');
-                AppHome.flashAlertMessage([
-                    ['success', 'Contato editado com sucesso']
-                ]);
+                //@to-do pegar do local storage
+                let user_id = 31;
+
+                $.ajax({
+                    type: 'PUT',
+                    contentType: "application/json",
+                    url: "/users/" + user_id,
+                    data: JSON.stringify({
+                        name: form.name.value,
+                        email: form.email.value,
+                        phone: form.phone.value,
+                        passwordPrevious: form.passwordPrevious.value,
+                        password: form.password.value
+                    }),
+                    success: function (response) {
+
+                        AppHome.flashAlertMessage([
+                            ['success', 'Suas informações foram editadas com sucesso']
+                        ]);
+
+                        let accountInfoModal = $('#account-info-modal');
+                        accountInfoModal.modal('hide');
+
+                    },
+                    error: function (xhr, textStatus) {
+
+                        AppHome.flashAlertMessage([
+                            ['danger', xhr.responseJSON.error]
+                        ]);
+
+                    },
+                    complete: function (xhr, textStatus) {
+                        console.log(xhr.status);
+                    }
+                });
+
             }
         });
     },

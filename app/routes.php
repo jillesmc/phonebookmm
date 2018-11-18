@@ -1,6 +1,7 @@
 <?php
 $route[] = ['GET','/', 'UserController@login'];
 $route[] = ['GET','/login', 'UserController@login'];
+$route[] = ['GET','/logout', 'UserController@logout'];
 $route[] = ['POST','/login/auth', 'UserController@auth'];
 $route[] = ['GET','/register', 'UserController@register'];
 $route[] = ['POST','/users', 'UserController@store'];

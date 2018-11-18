@@ -81,7 +81,12 @@ table.floatThead-table {
     font-size: 0.9em;
 }
 
+.contacts-table td:nth-child(1) {
+    width: 45px;
+}
+
 .contacts-table td:nth-child(2) {
+    width: 35px;
     padding: 9px 0;
 }
 
