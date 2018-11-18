@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="PhoneBook">
+    <meta name="author" content="Jilles Moraes Cardoso">
+
+    <link rel="icon" href="/images/favicon.ico">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/css/login.css">
+
+    <title><?= $this->getPageTitle('-') ?>PhoneBook</title>
+</head>
+<body>
+
+<?php $this->content() ?>
+
+<?php $this->renderView('/partials/_alert-messages') ?>
+
+<script src="/js/lib/jquery/jquery-3.3.1.min.js"></script>
+<script src="/js/lib/jquery/plugins/jquery.mask.min.js"></script>
+<script src="/js/lib/jquery/plugins/jquery.validate.min.js"></script>
+<script src="/js/lib/jquery/plugins/localization/messages_pt_BR.min.js"></script>
+
+<script src="/js/lib/popper/popper.min.js"></script>
+<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+<script src="/js/signup.js"></script>
+</body>
+</html>

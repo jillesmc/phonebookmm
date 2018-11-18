@@ -1,0 +1,184 @@
+:root {
+    --input-padding-x: .75rem;
+    --input-padding-y: .75rem;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    padding-top: 67px;
+}
+
+label[required]:after{
+    content:" *";
+    color:red;
+}
+
+/* Top search box */
+
+.search__input {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.search__magnify-icon {
+    width: 15px;
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: 24px;
+}
+
+.search__clear-button {
+    position: absolute;
+    display: block;
+    right: 24px;
+    top: -3px;
+    bottom: 0;
+    height: 14px;
+    margin: auto;
+    font-size: 14px;
+    cursor: pointer;
+    color: #808080;
+}
+
+/* Navbar logo responsive*/
+@media (max-width: 768px) {
+    .logo__image--icon-only {
+        width: 30px;
+    }
+}
+
+/* Contact table */
+table.floatThead-table {
+    border-top: none;
+    border-bottom: none;
+    background-color: #fff;
+}
+
+.table__header-line--below {
+    position: fixed;
+    z-index: 1002;
+    width: 100%;
+    top: 97px;
+}
+
+@media (max-width: 768px) {
+    .table__header-line--below {
+        top: 96px;
+    }
+}
+
+.contacts-table tr {
+    cursor: pointer;
+}
+
+.contacts-table__header {
+    cursor: default;
+    font-size: 0.9em;
+}
+
+.contacts-table td:nth-child(2) {
+    padding: 9px 0;
+}
+
+.contacts-table td:nth-last-child(1) {
+    cursor: default;
+    width: 131px;
+}
+
+.contacts-table__row {
+    font-size: 0.9em;
+}
+
+.contacts-table__row-circle {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+    background-color: #005cbf;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+}
+
+.contacts-table__first-character {
+    color: #0062cc;
+    font-weight: bold;
+}
+
+.button-add-contact {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 70px;
+    height: 70px;
+    padding: 21px 16px;
+    border-radius: 35px;
+    text-align: center;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.table-hover tbody tr td:nth-last-child(1) button {
+    display: none;
+}
+
+.table-hover tbody tr:hover td:nth-last-child(1) button {
+    display: inline-block;
+}
+
+/*Contact form*/
+.form-contact__field-icon {
+    width: 20px;
+    font-size: 14px;
+    color: #FFFFFF;
+}
+.form-contact .input-group-text{
+    background: #343a40;
+    border: 1px solid #343a40;
+}
+.form-contact label{
+    font-size: 12px;
+}
+
+/*delete-modal header*/
+.modal-header-danger {
+    color:#d9534f;
+}
+
+/*Alerts and loading*/
+#app-alerts{
+    z-index: 1051;
+}
+
+/* Alerts and loading: Absolute Center Spinner */
+.loading {
+    position: fixed;
+    z-index: 99;
+    height: 6em;
+    width: 6em;
+    margin: auto;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+.loading > img{
+    width: 6em;
+}
+
+/* Alerts and loading: Transparent Overlay */
+.loading:before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.3);
+}
