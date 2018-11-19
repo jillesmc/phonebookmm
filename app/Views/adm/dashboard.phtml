@@ -1,0 +1,104 @@
+<div class="summary-cards container">
+    <div class="row row-eq-height">
+        <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="card bg-secondary text-white text-center">
+                <div class="card-header">
+                    <h5 class="mb-0">Usuários</h5>
+                    <small>Total</small>
+                </div>
+                <div class="card-body">
+                    <p class="summary-cards__value" id="users_total">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="card bg-info text-white text-center">
+                <div class="card-header">
+                    <h5 class="mb-0">Contatos</h5>
+                    <small>Total</small>
+                </div>
+                <div class="card-body">
+
+                    <p class="summary-cards__value" id="contacts_total">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="card bg-secondary text-white text-center">
+                <div class="card-header">
+                    <h5 class="mb-0">Usuários</h5>
+                    <small>Últimos 30 dias</small>
+                </div>
+                <div class="card-body">
+
+                    <p class="summary-cards__value" id="users_total_last_month">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-4">
+            <div class="card bg-info text-white text-center">
+                <div class="card-header">
+                    <h5 class="mb-0">Contatos</h5>
+                    <small>Últimos 30 dias</small>
+                </div>
+                <div class="card-body">
+
+                    <p class="summary-cards__value" id="contacts_total_last_month">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Registro de usuários dos últimos 15 dias</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="newUsersFromPastFifteenDays" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Registro de contatos dos últimos 15 dias</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="newContactsFromPastFifteenDays" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Usuários por DDD</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="usersDDD" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row my-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Contatos por DDD</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="contactsDDD" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

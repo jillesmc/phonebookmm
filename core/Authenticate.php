@@ -16,8 +16,8 @@ trait Authenticate
         return $this->renderView('/user/register', 'layout-register');
     }
 
-    public function logout(){
-        Session::destroy('auth');
+    public function logout()
+    {
         Session::destroy('user');
         return Redirect::route('/login');
     }
@@ -27,7 +27,7 @@ trait Authenticate
         $result = Container::getModel('User')
             ->findByField('email', $request->post->email);
 
-        if($result && password_verify($request->post->password, $result->password)){
+        if ($result && password_verify($request->post->password, $result->password)) {
             $user = [
                 'id' => $result->id,
                 'name' => $result->name,
@@ -39,6 +39,7 @@ trait Authenticate
             ];
 
             Session::set('user', $user);
+            $this->auth = new Auth;
 
             return Redirect::route('/app');
         }

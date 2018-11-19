@@ -26,6 +26,52 @@ class Contact extends BaseModel
         ];
     }
 
+    public function countTotal()
+    {
+        $query = "SELECT count(*) as total FROM {$this->table}";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        $stmt->closeCursor();
+        return $result;
+    }
+
+    public function countTotalLastMonth()
+    {
+        $query = "SELECT count(*) as total FROM {$this->table} where created_at >= (CURDATE() - INTERVAL 1 MONTH)";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        $stmt->closeCursor();
+        return $result;
+    }
+
+    public function countTotalLastFifteenDaysPerDay()
+    {
+        $query = "SELECT DATE_FORMAT(created_at, '%d/%m') as day, count(*) as total "
+            ."FROM {$this->table} "
+            ."where created_at >= (CURDATE() - INTERVAL 15 DAY ) "
+            ."GROUP BY DATE_FORMAT(created_at, '%m%d') "
+            ."ORDER BY created_at";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+        $stmt->closeCursor();
+        return $result;
+    }
+
+
+    public function countPerZoneCode()
+    {
+        $query = "SELECT zone_code, count(*) as total from {$this->phonesTable} group by zone_code";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+        $stmt->closeCursor();
+        return $result;
+    }
+
+
 
     public function findUserContact($user_id, $contact_id)
     {

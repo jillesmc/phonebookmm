@@ -90,9 +90,16 @@ class Route
                 $routeFound = true;
                 $controller = $route[2];
                 $action = $route[3];
-                if(isset($route[4]) && Auth::check()){
-                    $action = 'forbidden';
-                }
+
+                //@to-do criar proteção de rota com auth
+//                if (isset($route[4]) && !Auth::check()) {
+//                    if ($route[4] == 'auth' && !Auth::check()) {
+//                        $action = 'forbidden';
+//                    }
+//                    if ($route[4] == 'auth-admin' && !AuthAdmin::check()) {
+//                        $action = 'forbidden';
+//                    }
+//                }
                 break;
             }
         }

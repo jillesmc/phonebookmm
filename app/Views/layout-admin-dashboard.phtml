@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="PhoneBook">
+    <meta name="author" content="Jilles Moraes Cardoso">
+
+    <link rel="icon" href="/images/favicon.ico">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/css/admin-dashboard.css">
+
+    <title><?= $this->getPageTitle('-') ?>PhoneBook</title>
+</head>
+<body>
+
+<div id="top-bar" class="container-fluid p-3 px-md-4 mb-3">
+    <div class="row">
+        <div class="col-6 text-left">
+            <img src="/images/logo-horizontal.svg" alt="" height="34">
+        </div>
+        <div class="col-6 text-right">
+            <a class="btn btn-outline-dark btn-sm" href="/admin/logout">Sair</a>
+        </div>
+    </div>
+</div>
+
+<?php $this->content(); ?>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="/js/lib/jquery/jquery-3.3.1.min.js"></script>
+<script src="/js/lib/popper/popper.min.js"></script>
+<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+<script src="/js/lib/chartjs/Chart.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

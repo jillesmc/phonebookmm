@@ -1,24 +1,75 @@
 var Admin = {
     init: function () {
-        Admin.newUsersChart();
+        Admin.getDashboarData();
+        // Admin.newUsersChart();
         Admin.newContactsChart();
         Admin.usersDDDChart();
         Admin.contactsDDDChart();
     },
-    newUsersChart: function () {
+    getDashboarData: function(){
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/admin/data",
+            success: function (response) {
+
+                let labels = [];
+                let data = [];
+
+                $('#users_total').html(response.users.total);
+                $('#contacts_total').html(response.contacts.total);
+                $('#users_total_last_month').html(response.users_last_month.total);
+                $('#contacts_total_last_month').html(response.contacts_last_month.total);
+
+
+
+                for(let i = 0; i < response.users_last_fifteen_days_per_day.length; i++){
+                    labels.push(response.users_last_fifteen_days_per_day[i].day);
+                    data.push(response.users_last_fifteen_days_per_day[i].total);
+                }
+                Admin.newUsersChart(labels, data);
+
+                labels = [];
+                data = [];
+                for(let i = 0; i < response.contacts_last_fifteen_days_per_day.length; i++){
+                    labels.push(response.contacts_last_fifteen_days_per_day[i].day);
+                    data.push(response.contacts_last_fifteen_days_per_day[i].total);
+                }
+                Admin.newContactsChart(labels, data);
+
+                labels = [];
+                data = [];
+                for(let i = 0; i < response.users_per_zone_code.length; i++){
+                    labels.push(response.users_per_zone_code[i].zone_code);
+                    data.push(response.users_per_zone_code[i].total);
+                }
+                Admin.usersDDDChart(labels, data);
+
+                labels = [];
+                data = [];
+                for(let i = 0; i < response.contacts_per_zone_code.length; i++){
+                    labels.push(response.contacts_per_zone_code[i].zone_code);
+                    data.push(response.contacts_per_zone_code[i].total);
+                }
+                Admin.contactsDDDChart(labels, data);
+
+            },
+            error: function (xhr, textStatus) {
+                AppHome.flashAlertMessage([
+                    ['danger', 'Algo não deu certo']
+                ]);
+            }
+        });
+
+    },
+    newUsersChart: function (labels, data) {
         let subscriptionData = {
-            labels: [
-                '01/11', '02/11', '03/11', '04/11', '05/11',
-                '06/11', '07/11', '08/11', '09/11', '10/11',
-                '11/11', '12/11', '13/11', '14/11', '15/11'
-            ],
+            labels: labels,
             datasets: [{
                 label: "# de registros",
-                data: [
-                    0, 59, 75, 20, 20, 55, 40,
-                    0, 5, 6, 0, 20,
-                    0, 4, 6, 0, 1
-                ],
+                data: data,
             }]
         };
 
@@ -40,20 +91,12 @@ var Admin = {
             options: chartOptions
         });
     },
-    newContactsChart: function () {
+    newContactsChart: function (labels, data) {
         let insertionData = {
-            labels: [
-                '01/11', '02/11', '03/11', '04/11', '05/11',
-                '06/11', '07/11', '08/11', '09/11', '10/11',
-                '11/11', '12/11', '13/11', '14/11', '15/11'
-            ],
+            labels: labels,
             datasets: [{
                 label: "# de registros",
-                data: [
-                    0, 59, 75, 20, 20, 55, 40,
-                    0, 5, 6, 0, 20,
-                    0, 4, 6, 0, 1
-                ],
+                data: data,
                 backgroundColor: 'rgba(23, 168, 184, 0.5)',
             }]
         };
@@ -76,21 +119,12 @@ var Admin = {
             options: chartOptions
         });
     },
-    usersDDDChart: function () {
+    usersDDDChart: function (labels, data) {
         let usersDDDData = {
-            labels: [
-                11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45,
-                46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83,
-                84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99
-            ],
+            labels: labels,
             datasets: [{
                 label: "# de registros",
-                data: [
-                    99, 98, 97, 96, 95, 94, 93, 92, 91, 89, 88, 87, 86, 85, 84, 83, 82, 81, 79, 77, 75, 74, 73, 71, 69,
-                    68, 67, 66, 65, 64, 63, 62, 61, 55, 54, 53, 51, 49, 48, 47, 46, 45, 44, 43, 42, 41, 38, 37, 35, 34,
-                    33, 32, 31, 28, 27, 24, 22, 21, 19, 18, 17, 16, 15, 14, 13, 12, 11
-
-                ],
+                data: data,
             }]
         };
 
@@ -113,21 +147,12 @@ var Admin = {
         });
 
     },
-    contactsDDDChart: function () {
+    contactsDDDChart: function (labels, data) {
         let contactsDDDData = {
-            labels: [
-                11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24, 27, 28, 31, 32, 33, 34, 35, 37, 38, 41, 42, 43, 44, 45,
-                46, 47, 48, 49, 51, 53, 54, 55, 61, 62, 63, 64, 65, 66, 67, 68, 69, 71, 73, 74, 75, 77, 79, 81, 82, 83,
-                84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99
-            ],
+            labels: labels,
             datasets: [{
                 label: "# de registros",
-                data: [
-                    99, 98, 97, 96, 95, 94, 93, 92, 91, 89, 88, 87, 86, 85, 84, 83, 82, 81, 79, 77, 75, 74, 73, 71, 69,
-                    68, 67, 66, 65, 64, 63, 62, 61, 55, 54, 53, 51, 49, 48, 47, 46, 45, 44, 43, 42, 41, 38, 37, 35, 34,
-                    33, 32, 31, 28, 27, 24, 22, 21, 19, 18, 17, 16, 15, 14, 13, 12, 11
-
-                ],
+                data: data,
                 backgroundColor: 'rgba(23, 168, 184, 0.5)',
             }]
         };

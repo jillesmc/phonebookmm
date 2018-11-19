@@ -6,6 +6,7 @@ namespace Core;
 abstract class BaseController
 {
     protected $view;
+    protected $auth;
     private $viewPath;
     private $layoutPath;
     private $pageTitle;
