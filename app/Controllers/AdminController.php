@@ -2,12 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Models\Admin;
-use App\Models\Contact;
-use App\Models\User;
 use Core\AuthenticateAdminTrait;
 use Core\BaseController;
-use Core\Database;
+use Core\Container;
 use Core\Response;
 
 class AdminController extends BaseController
@@ -21,9 +18,9 @@ class AdminController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->user = new User(Database::getDataBase());
-        $this->admin = new Admin(Database::getDataBase());
-        $this->contact = new Contact(Database::getDataBase());
+        $this->user = Container::getModel('User');
+        $this->admin = Container::getModel('Admin');
+        $this->contact = Container::getModel('Contact');
     }
 
     public function index()

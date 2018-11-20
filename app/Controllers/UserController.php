@@ -2,11 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Models\User;
 use Core\Auth;
 use Core\AuthenticateTrait;
 use Core\BaseController;
-use Core\Database;
+use Core\Container;
 use Core\Response;
 use Core\Validator;
 
@@ -19,12 +18,12 @@ class UserController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->user = new User(Database::getDataBase());
+        $this->user = Container::getModel('User');
     }
 
     public function show($user_id)
     {
-        if(Auth::getUserId() != $user_id){
+        if (Auth::getUserId() != $user_id) {
             return Response::json(Response::UNAUTHORIZED, [
                 'status' => 'error',
                 'message' => 'Acesso não autorizado',
@@ -67,7 +66,7 @@ class UserController extends BaseController
 
     public function update($user_id, $request)
     {
-        if(Auth::getUserId() != $user_id){
+        if (Auth::getUserId() != $user_id) {
             return Response::json(Response::UNAUTHORIZED, [
                 'status' => 'error',
                 'message' => 'Acesso não autorizado',
@@ -114,10 +113,6 @@ class UserController extends BaseController
                     ]);
                     break;
             }
-
         }
-
     }
-
-
 }

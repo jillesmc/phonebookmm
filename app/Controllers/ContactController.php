@@ -2,12 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Models\Contact;
-use App\Models\ContactPhone;
 use Core\Auth;
 use Core\AuthenticateTrait;
 use Core\BaseController;
-use Core\Database;
+use Core\Container;
 use Core\Response;
 use Core\Validator;
 
@@ -20,8 +18,8 @@ class ContactController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->contact = new Contact(Database::getDataBase());
-        $this->phone = new ContactPhone(Database::getDataBase());
+        $this->contact = Container::getModel('Contact');
+        $this->phone = Container::getModel('ContactPhone');
     }
 
     public function index($user_id, $request)
