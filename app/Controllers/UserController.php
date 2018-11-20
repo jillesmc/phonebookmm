@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use Core\Auth;
 use Core\AuthenticateTrait;
 use Core\BaseController;
 use Core\Database;
@@ -23,6 +24,13 @@ class UserController extends BaseController
 
     public function show($user_id)
     {
+        if(Auth::getUserId() != $user_id){
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         $contact = $this->user->find($user_id);
         if (!$contact) {
             return Response::json(Response::BAD_REQUEST, []);
@@ -59,6 +67,13 @@ class UserController extends BaseController
 
     public function update($user_id, $request)
     {
+        if(Auth::getUserId() != $user_id){
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         $contact = $this->user->find($user_id);
 
         if (!password_verify($request->post->passwordPrevious, $contact->password)) {

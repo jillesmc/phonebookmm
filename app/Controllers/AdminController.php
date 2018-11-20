@@ -5,13 +5,10 @@ namespace App\Controllers;
 use App\Models\Admin;
 use App\Models\Contact;
 use App\Models\User;
-use Core\Auth;
 use Core\AuthenticateAdminTrait;
 use Core\BaseController;
 use Core\Database;
-use Core\Redirect;
 use Core\Response;
-use Core\Session;
 
 class AdminController extends BaseController
 {
@@ -31,11 +28,6 @@ class AdminController extends BaseController
 
     public function index()
     {
-//        if (!Auth::validateToken()) {
-//            Session::destroy('admin');
-//            return Redirect::route('/admin/login');
-//        }
-
         $this->setPageTitle('Dashboard');
         return $this->renderView('/adm/dashboard', 'layout-admin-dashboard');
     }

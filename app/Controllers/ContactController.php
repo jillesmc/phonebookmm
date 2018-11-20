@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\Contact;
 use App\Models\ContactPhone;
+use Core\Auth;
+use Core\AuthenticateTrait;
 use Core\BaseController;
 use Core\Database;
 use Core\Response;
@@ -11,6 +13,7 @@ use Core\Validator;
 
 class ContactController extends BaseController
 {
+    use AuthenticateTrait;
     private $contact;
     private $phone;
 
@@ -23,6 +26,13 @@ class ContactController extends BaseController
 
     public function index($user_id, $request)
     {
+        if (Auth::getUserId() != $user_id) {
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         if (isset($request->get->q)) {
             $contactList = $this->contact->searchContacts($user_id, $request->get->q);
         } else {
@@ -49,6 +59,13 @@ class ContactController extends BaseController
 
     public function store($user_id, $request)
     {
+        if (Auth::getUserId() != $user_id) {
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         $contact = [
             'name' => $request->post->name,
             'email' => $request->post->email,
@@ -100,6 +117,13 @@ class ContactController extends BaseController
 
     public function update($user_id, $contact_id, $request)
     {
+        if (Auth::getUserId() != $user_id) {
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         $contact = [
             'name' => $request->post->name,
             'email' => $request->post->email,
@@ -151,6 +175,13 @@ class ContactController extends BaseController
 
     public function destroy($user_id, $contact_id)
     {
+        if (Auth::getUserId() != $user_id) {
+            return Response::json(Response::UNAUTHORIZED, [
+                'status' => 'error',
+                'message' => 'Acesso não autorizado',
+            ]);
+        }
+
         try {
             $this->contact->deleteUserContact($user_id, $contact_id);
             return Response::json(Response::OK, []);

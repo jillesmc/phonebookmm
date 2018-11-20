@@ -41,7 +41,8 @@ trait AuthenticateTrait
             $userData = [
                 'id' => $result->id,
                 'name' => $result->name,
-                'email' => $result->email
+                'email' => $result->email,
+                'role' => 'user'
             ];
 
             $jwt = Auth::createTokek($userData);

@@ -92,9 +92,19 @@ class Route
                 $action = $route[3];
 
                 //Proteção de rota com JWT
-                if (isset($route[4]) && !Auth::validateToken()) {
-                    $action = 'forbidden';
+
+                if (isset($route[4])) {
+                    $dataToken = Auth::validateToken();
+                    if (!$dataToken) {
+                        $action = 'forbidden';
+                    } elseif ($route[4] == 'user-auth' && $dataToken->data->role !== 'user') {
+                        $action = 'forbidden';
+                    } elseif ($route[4] == 'admin-auth' && $dataToken->data->role !== 'admin') {
+                        $action = 'forbidden';
+                    }
                 }
+
+
                 break;
             }
         }

@@ -31,7 +31,8 @@ trait AuthenticateAdminTrait
         if($result && $result->email === $request->post->email
             &&password_verify($request->post->password, $result->password)){
             $adminData = [
-                'id' => $result->id
+                'id' => $result->id,
+                'role' => 'admin'
             ];
 
             $jwt = Auth::createTokek($adminData);
