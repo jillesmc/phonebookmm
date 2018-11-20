@@ -21,11 +21,6 @@ class AppController extends BaseController
 
     public function index()
     {
-        if(!Auth::check()){
-            Session::destroy('user');
-            return Redirect::route('/login');
-        }
-
         $this->setPageTitle('App');
         return $this->renderView('app/index', 'layout-app');
     }

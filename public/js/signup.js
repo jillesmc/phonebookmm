@@ -64,7 +64,7 @@ var Signup = {
                     }),
                     success: function( result ) {
                         // form.submit();
-                        Signup.flashAlertMessage([
+                        FlashMessage.show([
                             ['success', 'Usuário criado com sucesso! Redirecionando para login...']
                         ]);
 
@@ -88,29 +88,7 @@ var Signup = {
                 field.mask(mask, options);
             }
         });
-    },
-    flashAlertMessage: function ($arrayMessages) {
-        let alertContainer = $('.alert-container');
-
-        $arrayMessages.forEach((item) => {
-            let alertClass = item[0]; //success, danger, warning, info
-            let message = item[1]; //the message
-            let messageHtml = '<div class="alert alert-' + alertClass + '" role="alert">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-                '<span aria-hidden="true">&times;</span>' +
-                '</button>' +
-                '<span>' + message + '</span>' +
-                '</div>';
-            let messageElem = $(messageHtml);
-
-            alertContainer.prepend(messageElem);
-            window.setTimeout(function () {
-                messageElem.fadeTo(500, 0).slideUp(500, function () {
-                    $(this).remove();
-                });
-            }, 4000);
-        });
-    },
+    }
 };
 
 $(document).ready(function () {

@@ -2,78 +2,43 @@
 
 namespace Core;
 
+use Firebase\JWT\JWT;
+
 class Auth
 {
+    private const SECRET = 'M@d&ir@_J0b';
 
-    private static $id = null;
-    private static $name = null;
-    private static $email = null;
-    private static $zoneCode = null;
-    private static $phone = null;
-    private static $createdAt = null;
-    private static $updatedAt = null;
-
-    public function __construct()
+    public static function createTokek($data)
     {
-        if (Session::get('user')) {
-            $user = Session::get('user');
-            self::$id = $user['id'];
-            self::$name = $user['name'];
-            self::$email = $user['email'];
-            self::$zoneCode = $user['zone_code'];
-            self::$phone = $user['phone'];
-            self::$createdAt = $user['created_at'];
-            self::$updatedAt = $user['updated_at'];
-        }
+        $issuedAt = time();
+        $expirationTime = $issuedAt + 60;
+        $token = [
+            "iat" => $issuedAt,
+            "exp" => $expirationTime + (60 * 60),
+            "data" => $data
+        ];
+
+        $jwt = JWT::encode($token, self::SECRET);
+
+        return $jwt;
     }
 
-    public static function id()
+    public static function validateToken(): bool
     {
-        return self::$id;
-    }
+        try {
+            $headers = apache_request_headers();
+            if(!isset($headers['Authorization'])){
+                throw new \Exception();
+            }
+            $authorization = explode(' ', $headers['Authorization']);
+            $token = $authorization[1];
+            $decoded = JWT::decode($token, self::SECRET, ['HS256']);
 
-    public static function name()
-    {
-        return self::$name;
-    }
-
-    public static function email()
-    {
-        return self::$email;
-    }
-
-    public static function zoneCode()
-    {
-        return self::$zoneCode;
-    }
-
-    public static function phone()
-    {
-        return self::$phone;
-    }
-
-    public static function createdAt()
-    {
-        return self::$createdAt;
-    }
-
-    public static function updatedAt()
-    {
-        return self::$updatedAt;
-    }
-
-    public static function check()
-    {
-        if (self::$id == null
-            || self::$email == null
-            || self::$name == null
-            || self::$zoneCode == null
-            || self::$phone == null
-            || self::$createdAt == null
-        ) {
+            $decoded_array = (array)$decoded;
+            return true;
+        } catch (\Exception $e) {
             return false;
         }
-        return true;
     }
 
 }

@@ -1,5 +1,6 @@
 var AppHome = {
     init: function () {
+        AppHome.getUserData();
         AppHome.prepareSearchField();
         AppHome.floatTableHeader();
         AppHome.modalViewActions();
@@ -26,8 +27,8 @@ var AppHome = {
         });
     },
     searchContacts: function (query) {
-        // @to-do pegar do localStorage
-        let user_id = 31;
+        let sessionData = AppHome.loadSession();
+        let userId = sessionData.user.id;
 
         let loader = $('#loader');
         let tableBody = $('.contacts-table tbody');
@@ -39,14 +40,17 @@ var AppHome = {
             contentType: "application/json",
             dataType: "json",
             data: {'q': query},
-            url: "/users/" + user_id + "/contacts",
+            url: "/users/" + userId + "/contacts",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+            },
             success: function (response) {
                 loader.hide();
                 AppHome.buildContactTable(response);
             },
             error: function (xhr, textStatus) {
                 loader.hide();
-                AppHome.flashAlertMessage([
+                FlashMessage.show([
                     ['success', 'Sua lista de contatos está vazia. Vamos começar']
                 ]);
             }
@@ -172,9 +176,47 @@ var AppHome = {
             }, 4000);
         });
     },
+    loadSession: function () {
+        let sessionData;
+        sessionData = JSON.parse(sessionStorage.getItem('user_session'));
+        if (!sessionData || !sessionData.user || !sessionData.user.id) {
+            window.location.href = '/';
+        }
+        return sessionData;
+    },
+    getUserData: function () {
+
+        let sessionData = AppHome.loadSession();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            url: "/users/" + sessionData.user.id,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + sessionData.jwt);
+            },
+            success: function (response) {
+                let userName = response.name.split(' ')[0]; //firstname
+                $('#top-bar .user-name').html(userName);
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    case 401:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        setTimeout(function () {
+                            window.location.href = '/'
+                        }, 2000);
+                        break;
+                }
+
+            }
+        });
+
+    },
     loadContacts: function () {
-        // @to-do pegar do localStorage
-        let user_id = 31;
+        let sessionData = AppHome.loadSession();
+        let user_id = sessionData.user.id;
         let loader = $('#loader');
         loader.show();
         $.ajax({
@@ -182,10 +224,13 @@ var AppHome = {
             contentType: "application/json",
             dataType: "json",
             url: "/users/" + user_id + "/contacts",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+            },
             success: function (response) {
                 loader.hide();
                 if (response.length == 0) {
-                    AppHome.flashAlertMessage([
+                    FlashMessage.show([
                         ['success', 'Sua lista de contatos está vazia. Vamos começar']
                     ]);
                 }
@@ -199,14 +244,17 @@ var AppHome = {
 
     },
     updateEditFormFields: function () {
+        let sessionData = AppHome.loadSession();
         let contactId = sessionStorage.getItem('contactId');
-        // @to-do pegar do local storage
-        let userId = 31;
+        let userId = sessionData.user.id;
         $.ajax({
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
             url: "/users/" + userId + "/contacts/" + contactId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+            },
             success: function (response) {
                 let editContactForm = $('#editContactForm');
                 let addMorePhoneButton = $('.form-contact__btn--add-more-phones');
@@ -227,20 +275,23 @@ var AppHome = {
                 }
             },
             error: function (xhr, textStatus) {
-                AppHome.flashAlertMessage([
+                FlashMessage.show([
                     ['danger', 'Algo não deu certo']
                 ]);
             }
         });
     },
     updateAccountFormFields: function () {
-        // @to-do pegar do local storage
-        let userId = 31;
+        let sessionData = AppHome.loadSession();
+        let userId = sessionData.user.id;
         $.ajax({
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
             url: "/users/" + userId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+            },
             success: function (response) {
                 let accountInfoForm = $('#accountInfoForm');
 
@@ -269,21 +320,24 @@ var AppHome = {
 
             },
             error: function (xhr, textStatus) {
-                AppHome.flashAlertMessage([
+                FlashMessage.show([
                     ['danger', 'Algo não deu certo']
                 ]);
             }
         });
     },
     updateModalContent: function (modal) {
+        let sessionData = AppHome.loadSession();
+        let userId = sessionData.user.id;
         let contactId = sessionStorage.getItem('contactId');
-        // @to-do pegar do local storage
-        let userId = 31;
         $.ajax({
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
             url: "/users/" + userId + "/contacts/" + contactId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+            },
             success: function (response) {
                 let phonesNotesHtml = '';
 
@@ -321,7 +375,7 @@ var AppHome = {
                 modal.find('.view-contact-data').html(phonesNotesHtml);
             },
             error: function (xhr, textStatus) {
-                AppHome.flashAlertMessage([
+                FlashMessage.show([
                     ['danger', 'Algo não deu certo']
                 ]);
             }
@@ -480,25 +534,28 @@ var ContactForms = {
     },
     deleteContactHandle: function () {
         $('#deleteContactButton').click(function (event) {
-            let deleteContactModal = $('#delete-contact-modal');
+            let sessionData = AppHome.loadSession();
+            let userId = sessionData.user.id;
             let contactId = sessionStorage.getItem('contactId');
-            // @to-do pegar do local storage
-            let userId = 31;
+            let deleteContactModal = $('#delete-contact-modal');
 
             $.ajax({
                 type: 'DELETE',
                 contentType: "application/json",
                 dataType: "json",
                 url: "/users/" + userId + "/contacts/" + contactId,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+                },
                 success: function (response) {
                     deleteContactModal.modal('hide');
                     AppHome.loadContacts();
-                    AppHome.flashAlertMessage([
+                    FlashMessage.show([
                         ['success', 'Contato removido com sucesso']
                     ])
                 },
                 error: function (xhr, textStatus) {
-                    AppHome.flashAlertMessage([
+                    FlashMessage.show([
                         ['danger', 'Algo não deu certo']
                     ]);
                 }
@@ -563,8 +620,8 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
-                // @to-do chamar do localStorage
-                let user_id = 31;
+                let sessionData = AppHome.loadSession();
+                let userId = sessionData.user.id;
                 let phones = [];
 
                 $(form).find('input[name^="inputPhone"]').each(function () {
@@ -574,17 +631,20 @@ var ContactForms = {
                 $.ajax({
                     type: 'POST',
                     contentType: "application/json",
-                    url: "/users/" + user_id + "/contacts",
+                    url: "/users/" + userId + "/contacts",
                     data: JSON.stringify({
                         name: form.name.value,
                         email: form.email.value,
                         phones: phones,
                         note: form.note.value
                     }),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+                    },
                     success: function (response) {
                         sessionStorage.setItem('contactId', response.contactId);
 
-                        AppHome.flashAlertMessage([
+                        FlashMessage.show([
                             ['success', 'Contato criado com sucesso']
                         ]);
 
@@ -646,9 +706,9 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
+                let sessionData = AppHome.loadSession();
+                let userId = sessionData.user.id;
                 let contactId = sessionStorage.getItem('contactId');
-                // @to-do chamar do localStorage
-                let user_id = 31;
                 let phones = [];
 
                 $(form).find('input[name^="inputPhone"]').each(function () {
@@ -658,17 +718,20 @@ var ContactForms = {
                 $.ajax({
                     type: 'PUT',
                     contentType: "application/json",
-                    url: "/users/" + user_id + "/contacts/" + contactId,
+                    url: "/users/" + userId + "/contacts/" + contactId,
                     data: JSON.stringify({
                         name: form.name.value,
                         email: form.email.value,
                         phones: phones,
                         note: form.note.value
                     }),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+                    },
                     success: function (response) {
                         sessionStorage.setItem('contactId', response.contactId);
 
-                        AppHome.flashAlertMessage([
+                        FlashMessage.show([
                             ['success', 'Contato editado com sucesso']
                         ]);
 
@@ -741,13 +804,13 @@ var ContactForms = {
                 $(element).removeClass(errorClass);
             },
             submitHandler: function (form) {
-                //@to-do pegar do local storage
-                let user_id = 31;
+                let sessionData = AppHome.loadSession();
+                let userId = sessionData.user.id;
 
                 $.ajax({
                     type: 'PUT',
                     contentType: "application/json",
-                    url: "/users/" + user_id,
+                    url: "/users/" + userId,
                     data: JSON.stringify({
                         name: form.name.value,
                         email: form.email.value,
@@ -755,9 +818,12 @@ var ContactForms = {
                         passwordPrevious: form.passwordPrevious.value,
                         password: form.password.value
                     }),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+                    },
                     success: function (response) {
 
-                        AppHome.flashAlertMessage([
+                        FlashMessage.show([
                             ['success', 'Suas informações foram editadas com sucesso']
                         ]);
 
@@ -767,7 +833,7 @@ var ContactForms = {
                     },
                     error: function (xhr, textStatus) {
 
-                        AppHome.flashAlertMessage([
+                        FlashMessage.show([
                             ['danger', xhr.responseJSON.error]
                         ]);
 

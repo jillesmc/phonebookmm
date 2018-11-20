@@ -2,10 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Models\Admin;
 use App\Models\Contact;
 use App\Models\User;
-use Core\AuthAdmin;
-use Core\AuthenticateAdmin;
+use Core\Auth;
+use Core\AuthenticateAdminTrait;
 use Core\BaseController;
 use Core\Database;
 use Core\Redirect;
@@ -14,26 +15,26 @@ use Core\Session;
 
 class AdminController extends BaseController
 {
-    use AuthenticateAdmin;
+    use AuthenticateAdminTrait;
 
-    private $authAdmin;
     private $user;
+    private $admin;
     private $contact;
 
     public function __construct()
     {
         parent::__construct();
-        $this->authAdmin = new AuthAdmin();
         $this->user = new User(Database::getDataBase());
+        $this->admin = new Admin(Database::getDataBase());
         $this->contact = new Contact(Database::getDataBase());
     }
 
     public function index()
     {
-        if (!AuthAdmin::check()) {
-            Session::destroy('admin');
-            return Redirect::route('/admin/login');
-        }
+//        if (!Auth::validateToken()) {
+//            Session::destroy('admin');
+//            return Redirect::route('/admin/login');
+//        }
 
         $this->setPageTitle('Dashboard');
         return $this->renderView('/adm/dashboard', 'layout-admin-dashboard');
@@ -51,8 +52,21 @@ class AdminController extends BaseController
             'users_per_zone_code' => $this->user->countPerZoneCode(),
             'contacts_per_zone_code' => $this->contact->countPerZoneCode()
         ]);
+    }
 
+    public function show($admin_id)
+    {
+        $adminUser = $this->admin->find($admin_id);
+        if (!$adminUser) {
+            return Response::json(Response::NO_CONTENT);
+        }
 
+        return Response::json(Response::OK, [
+            'status' => 'success',
+            'data' => [
+                'id' => $adminUser->id
+            ]
+        ]);
     }
 
 }

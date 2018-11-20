@@ -18,6 +18,8 @@
     "require": {
         "php": ">=7.1",
         "ext-pdo": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "firebase/php-jwt": "^5.0",
+        "ext-apache": "*"
     }
 }

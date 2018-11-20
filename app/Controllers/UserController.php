@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
-use Core\Authenticate;
+use Core\AuthenticateTrait;
 use Core\BaseController;
 use Core\Database;
 use Core\Response;
@@ -11,7 +11,7 @@ use Core\Validator;
 
 class UserController extends BaseController
 {
-    use Authenticate;
+    use AuthenticateTrait;
 
     private $user;
 
@@ -25,7 +25,7 @@ class UserController extends BaseController
     {
         $contact = $this->user->find($user_id);
         if (!$contact) {
-            return Response::json(Response::NOT_FOUND, []);
+            return Response::json(Response::BAD_REQUEST, []);
         }
         return Response::json(Response::OK, $contact);
     }

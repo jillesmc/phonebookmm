@@ -6,7 +6,6 @@ namespace Core;
 abstract class BaseController
 {
     protected $view;
-    protected $auth;
     private $viewPath;
     private $layoutPath;
     private $pageTitle;
@@ -14,12 +13,8 @@ abstract class BaseController
     public function __construct()
     {
         $this->view = new \stdClass;
-        $this->auth = new Auth;
     }
 
-    public function forbidden(){
-        return Redirect::route('/login');
-    }
 
     protected function renderView($viewPath, $layoutPath = null)
     {
@@ -58,7 +53,7 @@ abstract class BaseController
     protected function getPageTitle($separator = null)
     {
         if ($separator) {
-            return $this->pageTitle. " " . $separator . " ";
+            return $this->pageTitle . " " . $separator . " ";
         } else {
             return $this->pageTitle;
         }

@@ -1,18 +1,61 @@
 var Admin = {
     init: function () {
+        Admin.bindActions();
+        Admin.getUserData();
         Admin.getDashboarData();
-        // Admin.newUsersChart();
+        Admin.newUsersChart();
         Admin.newContactsChart();
         Admin.usersDDDChart();
         Admin.contactsDDDChart();
     },
-    getDashboarData: function(){
+    bindActions: function(){
+      $('#logout').click(function () {
+          sessionStorage.clear();
+          window.location.href = '/admin'
+      });
+    },
+    loadSession: function () {
+        let sessionData;
+        sessionData = JSON.parse(sessionStorage.getItem('admin_session'));
+        if (!sessionData || !sessionData.admin || !sessionData.admin.id) {
+            window.location.href = '/admin';
+        }
+        return sessionData;
+    },
+    getUserData: function () {
+        let sessionData = Admin.loadSession();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            url: "/admin/users/" + sessionData.admin.id,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + Admin.loadSession().jwt);
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    case 401:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        setTimeout(function () {
+                            window.location.href = '/admin'
+                        }, 2000);
+                        break;
+                }
 
+            }
+        });
+
+    },
+    getDashboarData: function(){
         $.ajax({
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
             url: "/admin/data",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + Admin.loadSession().jwt);
+            },
             success: function (response) {
 
                 let labels = [];
@@ -57,7 +100,7 @@ var Admin = {
 
             },
             error: function (xhr, textStatus) {
-                AppHome.flashAlertMessage([
+                FlashMessage.show([
                     ['danger', 'Algo não deu certo']
                 ]);
             }

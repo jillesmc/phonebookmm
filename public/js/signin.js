@@ -42,15 +42,15 @@ var Signin = {
                         email : form.email.value,
                         password : form.password.value
                     }),
-                    success: function( result ) {
+                    success: function( response) {
+                        sessionStorage.setItem('user_session',JSON.stringify(response.data));
                         window.location.href = '/app';
                     },
-                    complete: function (xhr, textStatus) {
-                        console.log();
+                    error: function (xhr, textStatus) {
                         switch (xhr.status) {
                             case 403:
-                                Signin.flashAlertMessage([
-                                    ['danger', 'Usuário e senha inválidos']
+                                FlashMessage.show([
+                                    ['danger', xhr.responseJSON.message]
                                 ]);
                                 break;
                         }
@@ -59,29 +59,7 @@ var Signin = {
                 });
             }
         });
-    },
-    flashAlertMessage: function ($arrayMessages) {
-        let alertContainer = $('.alert-container');
-
-        $arrayMessages.forEach((item) => {
-            let alertClass = item[0]; //success, danger, warning, info
-            let message = item[1]; //the message
-            let messageHtml = '<div class="alert alert-' + alertClass + '" role="alert">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-                '<span aria-hidden="true">&times;</span>' +
-                '</button>' +
-                '<span>' + message + '</span>' +
-                '</div>';
-            let messageElem = $(messageHtml);
-
-            alertContainer.prepend(messageElem);
-            window.setTimeout(function () {
-                messageElem.fadeTo(500, 0).slideUp(500, function () {
-                    $(this).remove();
-                });
-            }, 4000);
-        });
-    },
+    }
 };
 
 $(document).ready(function () {
