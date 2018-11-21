@@ -1,5 +1,6 @@
 var AppHome = {
     init: function () {
+        AppHome.bindActions();
         AppHome.getUserData();
         AppHome.prepareSearchField();
         AppHome.floatTableHeader();
@@ -10,6 +11,12 @@ var AppHome = {
         AppHome.loadDataForEditContactModal();
         AppHome.loadDataForDeleteContactModal();
         AppHome.loadDataForAccountInfoModal();
+    },
+    bindActions: function () {
+        $('#logout').click(function () {
+            sessionStorage.clear();
+            window.location.href = '/'
+        });
     },
     prepareSearchField: function () {
         let searchInput = $("#inputSearch");
@@ -46,13 +53,25 @@ var AppHome = {
             },
             success: function (response) {
                 loader.hide();
-                AppHome.buildContactTable(response);
+                AppHome.buildContactTable(response.data);
             },
             error: function (xhr, textStatus) {
                 loader.hide();
-                FlashMessage.show([
-                    ['success', 'Sua lista de contatos está vazia. Vamos começar']
-                ]);
+                switch (xhr.status) {
+                    case 404:
+                        FlashMessage.show([
+                            ['success', 'Nenhum contato encontrado']
+                        ]);
+                        AppHome.buildContactTable([]);
+                        break;
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+
+                }
+
             }
         });
     },
@@ -195,7 +214,7 @@ var AppHome = {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + sessionData.jwt);
             },
             success: function (response) {
-                let userName = response.name.split(' ')[0]; //firstname
+                let userName = response.data.name.split(' ')[0]; //firstname
                 $('#top-bar .user-name').html(userName);
             },
             error: function (xhr, textStatus) {
@@ -229,15 +248,25 @@ var AppHome = {
             },
             success: function (response) {
                 loader.hide();
-                if (response.length == 0) {
-                    FlashMessage.show([
-                        ['success', 'Sua lista de contatos está vazia. Vamos começar']
-                    ]);
-                }
-                AppHome.buildContactTable(response);
+
+                AppHome.buildContactTable(response.data);
             },
             error: function (xhr, textStatus) {
                 loader.hide();
+                switch (xhr.status) {
+                    case 404:
+                        FlashMessage.show([
+                            ['success', 'Sua lista de contatos está vazia. Vamos começar']
+                        ]);
+                        AppHome.buildContactTable([]);
+                        break;
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+
+                }
 
             }
         });
@@ -259,25 +288,29 @@ var AppHome = {
                 let editContactForm = $('#editContactForm');
                 let addMorePhoneButton = $('.form-contact__btn--add-more-phones');
 
-                editContactForm.find('input[name="name"]').val(response.name);
-                editContactForm.find('input[name="email"]').val(response.email);
-                editContactForm.find('textarea[name="note"]').val(response.note);
+                editContactForm.find('input[name="name"]').val(response.data.name);
+                editContactForm.find('input[name="email"]').val(response.data.email);
+                editContactForm.find('textarea[name="note"]').val(response.data.note);
 
-                for (let i = 0; i < response.phones.length; i++) {
+                for (let i = 0; i < response.data.phones.length; i++) {
                     let index = i !== 0 ? i : '';
 
                     if (editContactForm.find('input[name="inputPhone[' + index + ']"]').length === 0) {
                         addMorePhoneButton.click();
                     }
 
-                    editContactForm.find('input[name="inputPhone[' + index + ']"]').val(response.phones[i].phone);
+                    editContactForm.find('input[name="inputPhone[' + index + ']"]').val(response.data.phones[i].phone);
 
                 }
             },
             error: function (xhr, textStatus) {
-                FlashMessage.show([
-                    ['danger', 'Algo não deu certo']
-                ]);
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
             }
         });
     },
@@ -295,9 +328,9 @@ var AppHome = {
             success: function (response) {
                 let accountInfoForm = $('#accountInfoForm');
 
-                accountInfoForm.find('input[name="name"]').val(response.name);
-                accountInfoForm.find('input[name="email"]').val(response.email);
-                accountInfoForm.find('input[name="phone"]').val(response.phone);
+                accountInfoForm.find('input[name="name"]').val(response.data.name);
+                accountInfoForm.find('input[name="email"]').val(response.data.email);
+                accountInfoForm.find('input[name="phone"]').val(response.data.phone);
 
                 accountInfoForm.find('input[name="password"]').val('');
                 accountInfoForm.find('input[name="passwordPrevious"]').val('');
@@ -320,9 +353,13 @@ var AppHome = {
 
             },
             error: function (xhr, textStatus) {
-                FlashMessage.show([
-                    ['danger', 'Algo não deu certo']
-                ]);
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
             }
         });
     },
@@ -342,42 +379,46 @@ var AppHome = {
                 let phonesNotesHtml = '';
 
                 phonesNotesHtml += '<div class="mb-4">' +
-                    '<h5>' + response.name + '</h5>' +
+                    '<h5>' + response.data.name + '</h5>' +
                     '</div>';
 
-                if (response.email) {
+                if (response.data.email) {
                     phonesNotesHtml += '<p>' +
                         '<div class="float-left pr-3 text-right" ><span class="oi oi-envelope-closed' +
                         ' text-muted"></span></div>' +
-                        '<a href="mailto:' + response.email + '" class="">' + response.email + '</a>' +
+                        '<a href="mailto:' + response.data.email + '" class="">' + response.data.email + '</a>' +
                         '</p>';
                 }
 
-                for (let i = 0; i < response.phones.length; i++) {
-                    let numberOnlyPhone = response.phones[i].phone.replace(' ', '').replace('-', '');
+                for (let i = 0; i < response.data.phones.length; i++) {
+                    let numberOnlyPhone = response.data.phones[i].phone.replace(' ', '').replace('-', '');
                     phonesNotesHtml += '<p>' +
                         '<div class="float-left pr-3 text-right" ><span class="oi oi-phone' +
                         ' text-muted"></span></div>' +
                         '<a href="tel:' + numberOnlyPhone + '">' +
-                        response.phones[i].phone +
+                        response.data.phones[i].phone +
                         '</a>' +
                         '</p>';
                 }
 
-                if (response.note) {
+                if (response.data.note) {
                     phonesNotesHtml += '<p>' +
                         '<div class="float-left pr-3 text-right"><span class="oi oi-book' +
                         ' text-muted"></span></div>' +
-                        response.note +
+                        response.data.note +
                         '</p>';
                 }
 
                 modal.find('.view-contact-data').html(phonesNotesHtml);
             },
             error: function (xhr, textStatus) {
-                FlashMessage.show([
-                    ['danger', 'Algo não deu certo']
-                ]);
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
             }
         });
     },
@@ -555,9 +596,13 @@ var ContactForms = {
                     ])
                 },
                 error: function (xhr, textStatus) {
-                    FlashMessage.show([
-                        ['danger', 'Algo não deu certo']
-                    ]);
+                    switch (xhr.status) {
+                        default:
+                            FlashMessage.show([
+                                ['error', xhr.responseJSON.message]
+                            ]);
+                            break;
+                    }
                 }
             });
 
@@ -642,7 +687,7 @@ var ContactForms = {
                         xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
                     },
                     success: function (response) {
-                        sessionStorage.setItem('contactId', response.contactId);
+                        sessionStorage.setItem('contactId', response.data.contactId);
 
                         FlashMessage.show([
                             ['success', 'Contato criado com sucesso']
@@ -660,8 +705,15 @@ var ContactForms = {
                         viewModal.addClass('fade');
 
                     },
-                    complete: function (xhr, textStatus) {
-                        console.log(xhr.status);
+                    error: function (xhr, textStatus) {
+                        switch (xhr.status) {
+                            default:
+                                FlashMessage.show([
+                                    ['danger', xhr.responseJSON.message]
+                                ]);
+                                break;
+                        }
+
                     }
                 });
             }
@@ -729,7 +781,7 @@ var ContactForms = {
                         xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
                     },
                     success: function (response) {
-                        sessionStorage.setItem('contactId', response.contactId);
+                        sessionStorage.setItem('contactId', response.data.contactId);
 
                         FlashMessage.show([
                             ['success', 'Contato editado com sucesso']
@@ -747,8 +799,15 @@ var ContactForms = {
                         viewModal.addClass('fade');
 
                     },
-                    complete: function (xhr, textStatus) {
-                        console.log(xhr.status);
+                    error: function (xhr, textStatus) {
+                        switch (xhr.status) {
+                            default:
+                                FlashMessage.show([
+                                    ['danger', xhr.responseJSON.message]
+                                ]);
+                                break;
+                        }
+
                     }
                 });
             }
@@ -832,14 +891,13 @@ var ContactForms = {
 
                     },
                     error: function (xhr, textStatus) {
-
-                        FlashMessage.show([
-                            ['danger', xhr.responseJSON.error]
-                        ]);
-
-                    },
-                    complete: function (xhr, textStatus) {
-                        console.log(xhr.status);
+                        switch (xhr.status) {
+                            default:
+                                FlashMessage.show([
+                                    ['danger', xhr.responseJSON.message]
+                                ]);
+                                break;
+                        }
                     }
                 });
 

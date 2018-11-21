@@ -30,11 +30,18 @@ class UserController extends BaseController
             ]);
         }
 
-        $contact = $this->user->find($user_id);
-        if (!$contact) {
-            return Response::json(Response::BAD_REQUEST, []);
+        $user = $this->user->find($user_id);
+        if (!$user) {
+            return Response::json(Response::NOT_FOUND, [
+                'status' => 'success',
+                'message' => 'Contato não encontrado',
+            ]);
         }
-        return Response::json(Response::OK, $contact);
+        return Response::json(Response::OK, [
+            'status' => 'success',
+            'message' => 'Acesso não autorizado',
+            'data' => $user
+        ]);
     }
 
     public function store($request)
@@ -57,10 +64,16 @@ class UserController extends BaseController
 
         try {
             $this->user->create($data);
+            return Response::json(Response::OK, [
+                'status' => 'success',
+                'message' => 'Usuário criado',
+            ]);
         } catch (\Exception $e) {
             return Response::json(Response::INTERNAL_SERVER_ERROR, [
-                'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
+                'status' => 'error',
+                'message' => 'Algo não deu certo no banco de dados',
             ]);
+
         }
     }
 
@@ -77,7 +90,8 @@ class UserController extends BaseController
 
         if (!password_verify($request->post->passwordPrevious, $contact->password)) {
             return Response::json(Response::BAD_REQUEST, [
-                'error' => 'Senha antiga incorreta'
+                'status' => 'error',
+                'message' => 'Senha antiga incorreta',
             ]);
         }
 
@@ -92,7 +106,9 @@ class UserController extends BaseController
 
         if ($errors = Validator::make($data, $this->user->rulesUpdate($user_id))) {
             return Response::json(Response::BAD_REQUEST, [
-                'error' => $errors
+                'status' => 'error',
+                'message' => 'Algo não deu certo na validação',
+                'data' => $errors
             ]);
         }
 
@@ -100,16 +116,24 @@ class UserController extends BaseController
 
         try {
             $this->user->update($data, $user_id);
+
+            return Response::json(Response::OK, [
+                'status' => 'success',
+                'message' => 'Usuário atualizado com sucesso',
+            ]);
+
         } catch (\Exception $e) {
             switch ($e->getCode()) {
                 case 23000:
                     return Response::json(Response::CONFLICT, [
-                        'error' => 'Usuário já existe'
+                        'status' => 'error',
+                        'message' => 'Usuário já existe',
                     ]);
                     break;
                 default:
                     return Response::json(Response::INTERNAL_SERVER_ERROR, [
-                        'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
+                        'status' => 'error',
+                        'message' => 'Algo não deu certo no banco de dados',
                     ]);
                     break;
             }

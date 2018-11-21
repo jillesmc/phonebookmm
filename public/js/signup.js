@@ -63,7 +63,6 @@ var Signup = {
                         password : form.password.value
                     }),
                     success: function( result ) {
-                        // form.submit();
                         FlashMessage.show([
                             ['success', 'Usuário criado com sucesso! Redirecionando para login...']
                         ]);

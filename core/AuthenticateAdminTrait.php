@@ -18,7 +18,7 @@ trait AuthenticateAdminTrait
     {
         return Response::json(Response::UNAUTHORIZED, [
             'code' => Response::UNAUTHORIZED,
-            'status' => 'failed',
+            'status' => 'error',
             'message' => 'Usuário não autorizado'
         ]);
     }

@@ -37,22 +37,34 @@ class ContactController extends BaseController
             $contactList = $this->contact->listUserContacts($user_id);
         }
         if (!$contactList) {
-            return Response::json(Response::OK);
+            return Response::json(Response::NOT_FOUND, [
+                'status' => 'error',
+                'message' => 'Nenhum contato encontrado'
+            ]);
         }
-        return Response::json(Response::OK, $contactList);
+        return Response::json(Response::OK, [
+            'status' => 'success',
+            'data' => $contactList
+        ]);
     }
 
     public function show($user_id, $contact_id)
     {
         $contact = $this->contact->findUserContact($user_id, $contact_id);
         if (!$contact) {
-            return Response::json(Response::NOT_FOUND);
+            return Response::json(Response::NOT_FOUND, [
+                'status' => 'error',
+                'message' => 'Contato não encontrado'
+            ]);
         }
 
         $contact->phones = $this->contact->getContactPhones($contact_id);
 
+        return Response::json(Response::OK, [
+            'status' => 'success',
+            'data' => $contact
+        ]);
 
-        return Response::json(Response::OK, (array)$contact);
     }
 
     public function store($user_id, $request)
@@ -85,8 +97,9 @@ class ContactController extends BaseController
 
         if ($errors = Validator::make($contact, $this->contact->rulesCreate())) {
             return Response::json(Response::BAD_REQUEST, [
-                'error' => 'Algo não deu certo na validação',
-                'fields' => $errors
+                'status' => 'error',
+                'message' => 'Algo não deu certo na validação',
+                'data' => $errors
             ]);
         }
 
@@ -94,8 +107,9 @@ class ContactController extends BaseController
             foreach ($phones as $phone) {
                 if ($errors = Validator::make($phone, $this->phone->rulesCreate())) {
                     return Response::json(Response::BAD_REQUEST, [
-                        'error' => 'Algo não deu certo na validação dos telefones',
-                        'fields' => $errors
+                        'status' => 'error',
+                        'message' => 'Algo não deu certo na validação dos telefones',
+                        'data' => $errors
                     ]);
                 }
             }
@@ -103,9 +117,14 @@ class ContactController extends BaseController
 
         try {
             $contact_id = $this->contact->createWithPhones($user_id, $contact, $phones);
+
             return Response::json(Response::OK, [
-                'contactId' => $contact_id
+                'status' => 'success',
+                'data' => [
+                    'contactId' => $contact_id
+                ]
             ]);
+
         } catch (\Exception $e) {
             return Response::json(Response::INTERNAL_SERVER_ERROR, [
                 'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
@@ -143,8 +162,9 @@ class ContactController extends BaseController
 
         if ($errors = Validator::make($contact, $this->contact->rulesCreate())) {
             return Response::json(Response::BAD_REQUEST, [
-                'error' => 'Algo não deu certo na validação',
-                'fields' => $errors
+                'status' => 'error',
+                'message' => 'Algo não deu certo na validação',
+                'data' => $errors
             ]);
         }
 
@@ -152,8 +172,9 @@ class ContactController extends BaseController
             foreach ($phones as $phone) {
                 if ($errors = Validator::make($phone, $this->phone->rulesCreate())) {
                     return Response::json(Response::BAD_REQUEST, [
-                        'error' => 'Algo não deu certo na validação dos telefones',
-                        'fields' => $errors
+                        'status' => 'error',
+                        'message' => 'Algo não deu certo na validação dos telefones',
+                        'data' => $errors
                     ]);
                 }
             }
@@ -161,12 +182,19 @@ class ContactController extends BaseController
 
         try {
             $contact_id = $this->contact->updateWithPhones($user_id, $contact_id, $contact, $phones);
+
             return Response::json(Response::OK, [
-                'contactId' => $contact_id
+                'status' => 'success',
+                'message' => 'Contato atualizado com sucesso',
+                'data' => [
+                    'contactId' => $contact_id
+                ]
             ]);
+
         } catch (\Exception $e) {
             return Response::json(Response::INTERNAL_SERVER_ERROR, [
-                'error' => 'Algo não deu certo no banco de dados: ' . $e->getCode() . ' => ' . $e->getMessage()
+                'status' => 'error',
+                'message' => 'Algo não deu certo no banco de dados',
             ]);
         }
     }
@@ -182,9 +210,15 @@ class ContactController extends BaseController
 
         try {
             $this->contact->deleteUserContact($user_id, $contact_id);
-            return Response::json(Response::OK, []);
+            return Response::json(Response::OK, [
+                'status' => 'success',
+                'message' => 'Contato deletado com sucesso',
+            ]);
         } catch (\Exception $e) {
-            return Response::json(Response::NOT_FOUND, []);
+            return Response::json(Response::INTERNAL_SERVER_ERROR, [
+                'status' => 'error',
+                'message' => 'Algo não deu certo no banco de dados',
+            ]);
         }
     }
 

@@ -61,40 +61,40 @@ var Admin = {
                 let labels = [];
                 let data = [];
 
-                $('#users_total').html(response.users.total);
-                $('#contacts_total').html(response.contacts.total);
-                $('#users_total_last_month').html(response.users_last_month.total);
-                $('#contacts_total_last_month').html(response.contacts_last_month.total);
+                $('#users_total').html(response.data.users.total);
+                $('#contacts_total').html(response.data.contacts.total);
+                $('#users_total_last_month').html(response.data.users_last_month.total);
+                $('#contacts_total_last_month').html(response.data.contacts_last_month.total);
 
 
 
-                for(let i = 0; i < response.users_last_fifteen_days_per_day.length; i++){
-                    labels.push(response.users_last_fifteen_days_per_day[i].day);
-                    data.push(response.users_last_fifteen_days_per_day[i].total);
+                for(let i = 0; i < response.data.users_last_fifteen_days_per_day.length; i++){
+                    labels.push(response.data.users_last_fifteen_days_per_day[i].day);
+                    data.push(response.data.users_last_fifteen_days_per_day[i].total);
                 }
                 Admin.newUsersChart(labels, data);
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.contacts_last_fifteen_days_per_day.length; i++){
-                    labels.push(response.contacts_last_fifteen_days_per_day[i].day);
-                    data.push(response.contacts_last_fifteen_days_per_day[i].total);
+                for(let i = 0; i < response.data.contacts_last_fifteen_days_per_day.length; i++){
+                    labels.push(response.data.contacts_last_fifteen_days_per_day[i].day);
+                    data.push(response.data.contacts_last_fifteen_days_per_day[i].total);
                 }
                 Admin.newContactsChart(labels, data);
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.users_per_zone_code.length; i++){
-                    labels.push(response.users_per_zone_code[i].zone_code);
-                    data.push(response.users_per_zone_code[i].total);
+                for(let i = 0; i < response.data.users_per_zone_code.length; i++){
+                    labels.push(response.data.users_per_zone_code[i].zone_code);
+                    data.push(response.data.users_per_zone_code[i].total);
                 }
                 Admin.usersDDDChart(labels, data);
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.contacts_per_zone_code.length; i++){
-                    labels.push(response.contacts_per_zone_code[i].zone_code);
-                    data.push(response.contacts_per_zone_code[i].total);
+                for(let i = 0; i < response.data.contacts_per_zone_code.length; i++){
+                    labels.push(response.data.contacts_per_zone_code[i].zone_code);
+                    data.push(response.data.contacts_per_zone_code[i].total);
                 }
                 Admin.contactsDDDChart(labels, data);
 

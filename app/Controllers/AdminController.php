@@ -32,14 +32,17 @@ class AdminController extends BaseController
     public function data()
     {
         Response::json(Response::OK, [
-            'users' => $this->user->countTotal(),
-            'contacts' => $this->contact->countTotal(),
-            'users_last_month' => $this->user->countTotalLastMonth(),
-            'contacts_last_month' => $this->contact->countTotalLastMonth(),
-            'users_last_fifteen_days_per_day' => $this->user->countTotalLastFifteenDaysPerDay(),
-            'contacts_last_fifteen_days_per_day' => $this->contact->countTotalLastFifteenDaysPerDay(),
-            'users_per_zone_code' => $this->user->countPerZoneCode(),
-            'contacts_per_zone_code' => $this->contact->countPerZoneCode()
+            'status' => 'success',
+            'data' => [
+                'users' => $this->user->countTotal(),
+                'contacts' => $this->contact->countTotal(),
+                'users_last_month' => $this->user->countTotalLastMonth(),
+                'contacts_last_month' => $this->contact->countTotalLastMonth(),
+                'users_last_fifteen_days_per_day' => $this->user->countTotalLastFifteenDaysPerDay(),
+                'contacts_last_fifteen_days_per_day' => $this->contact->countTotalLastFifteenDaysPerDay(),
+                'users_per_zone_code' => $this->user->countPerZoneCode(),
+                'contacts_per_zone_code' => $this->contact->countPerZoneCode()
+            ]
         ]);
     }
 
