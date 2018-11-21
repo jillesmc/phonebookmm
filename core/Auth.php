@@ -4,13 +4,22 @@ namespace Core;
 
 use Firebase\JWT\JWT;
 
+/**
+ * Class Auth
+ * @package Core
+ */
 class Auth
 {
-    private const SECRET = 'M@d&ir@_J0b';
+    private const SECRET = 'M&_C0ntR@t@_M@d&ir@_M@d&ir@_:D';
 
     private static $userId;
 
-    public static function createTokek($data)
+    /**
+     *
+     * @param $data
+     * @return string
+     */
+    public static function createTokek($data): string
     {
         $issuedAt = time();
         $expirationTime = $issuedAt + 60;
@@ -25,6 +34,9 @@ class Auth
         return $jwt;
     }
 
+    /**
+     * @return bool|\stdClass
+     */
     public static function validateToken()
     {
         try {
@@ -44,7 +56,11 @@ class Auth
         }
     }
 
-    public static function getUserId(){
+    /**
+     * @return string
+     */
+    public static function getUserId(): string
+    {
         return self::$userId;
     }
 

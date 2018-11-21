@@ -5,11 +5,18 @@ namespace App\Models;
 use Core\BaseModel;
 use Exception;
 
+/**
+ * Class Contact
+ * @package App\Models
+ */
 class Contact extends BaseModel
 {
     protected $table = 'contacts';
     protected $phonesTable = 'contacts_phones';
 
+    /**
+     * @return array
+     */
     public function rulesCreate()
     {
         return [
@@ -18,6 +25,10 @@ class Contact extends BaseModel
         ];
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public function rulesUpdate($id)
     {
         return [
@@ -26,9 +37,12 @@ class Contact extends BaseModel
         ];
     }
 
+    /**
+     * @return mixed
+     */
     public function countTotal()
     {
-        $query = "SELECT count(*) as total FROM {$this->table}";
+        $query = "SELECT count(*) as total FROM {$this->table} LIMIT 1";
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
         $result = $stmt->fetch();
@@ -36,9 +50,12 @@ class Contact extends BaseModel
         return $result;
     }
 
+    /**
+     * @return mixed
+     */
     public function countTotalLastMonth()
     {
-        $query = "SELECT count(*) as total FROM {$this->table} where created_at >= (CURDATE() - INTERVAL 1 MONTH)";
+        $query = "SELECT count(*) as total FROM {$this->table} where created_at >= (CURDATE() - INTERVAL 1 MONTH) LIMIT 1";
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
         $result = $stmt->fetch();
@@ -46,13 +63,16 @@ class Contact extends BaseModel
         return $result;
     }
 
-    public function countTotalLastFifteenDaysPerDay()
+    /**
+     * @return array
+     */
+    public function countTotalLastFifteenDaysPerDay(): array
     {
         $query = "SELECT DATE_FORMAT(created_at, '%d/%m') as day, count(*) as total "
-            ."FROM {$this->table} "
-            ."where created_at >= (CURDATE() - INTERVAL 15 DAY ) "
-            ."GROUP BY DATE_FORMAT(created_at, '%m%d') "
-            ."ORDER BY created_at";
+            . "FROM {$this->table} "
+            . "where created_at >= (CURDATE() - INTERVAL 15 DAY ) "
+            . "GROUP BY DATE_FORMAT(created_at, '%m%d') "
+            . "ORDER BY created_at";
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
         $result = $stmt->fetchAll();
@@ -61,7 +81,10 @@ class Contact extends BaseModel
     }
 
 
-    public function countPerZoneCode()
+    /**
+     * @return array
+     */
+    public function countPerZoneCode(): array
     {
         $query = "SELECT zone_code, count(*) as total from {$this->phonesTable} group by zone_code";
         $stmt = $this->pdo->prepare($query);
@@ -72,10 +95,14 @@ class Contact extends BaseModel
     }
 
 
-
+    /**
+     * @param $user_id
+     * @param $contact_id
+     * @return mixed
+     */
     public function findUserContact($user_id, $contact_id)
     {
-        $query = "SELECT * FROM {$this->table} WHERE id=:id AND users_id=:users_id";
+        $query = "SELECT * FROM {$this->table} WHERE id=:id AND users_id=:users_id LIMIT 1";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(':id', $contact_id);
         $stmt->bindValue(':users_id', $user_id);
@@ -86,7 +113,11 @@ class Contact extends BaseModel
         return $result;
     }
 
-    public function getContactPhones($contact_id)
+    /**
+     * @param $contact_id
+     * @return array
+     */
+    public function getContactPhones($contact_id): array
     {
         $query = "SELECT * FROM {$this->phonesTable} WHERE contacts_id=:contacts_id";
         $stmt = $this->pdo->prepare($query);
@@ -97,7 +128,11 @@ class Contact extends BaseModel
         return $result;
     }
 
-    public function listUserContacts($user_id)
+    /**
+     * @param $user_id
+     * @return array
+     */
+    public function listUserContacts($user_id): array
     {
         $query = "SELECT " .
             "{$this->table}.id, {$this->table}.name, {$this->table}.email, "
@@ -114,7 +149,12 @@ class Contact extends BaseModel
         return $result;
     }
 
-    public function searchContacts($user_id, $search_query)
+    /**
+     * @param $user_id
+     * @param $search_query
+     * @return array
+     */
+    public function searchContacts($user_id, $search_query): array
     {
 
         $query = "SELECT " .
@@ -140,7 +180,14 @@ class Contact extends BaseModel
         return $result;
     }
 
-    public function createWithPhones($users_id, array $contact, array $phones = [])
+    /**
+     * @param $users_id
+     * @param array $contact
+     * @param array $phones
+     * @return string
+     * @throws Exception
+     */
+    public function createWithPhones(string $users_id, array $contact, array $phones = []): string
     {
         $this->pdo->beginTransaction();
 
@@ -172,7 +219,12 @@ class Contact extends BaseModel
         }
     }
 
-    public function update(array $data, $id)
+    /**
+     * @param array $data
+     * @param $id
+     * @return bool
+     */
+    public function update(array $data, string $id): bool
     {
         $data = $this->prepareDataUpdate($data);
         $query = "UPDATE {$this->table} SET {$data[0]},updated_at=NOW() WHERE id=:id";
@@ -187,7 +239,15 @@ class Contact extends BaseModel
 
     }
 
-    public function updateWithPhones($users_id, $contact_id, array $contact, array $phones = [])
+    /**
+     * @param $users_id
+     * @param $contact_id
+     * @param array $contact
+     * @param array $phones
+     * @return string
+     * @throws Exception
+     */
+    public function updateWithPhones(string $users_id, string $contact_id, array $contact, array $phones = []): string
     {
         $this->pdo->beginTransaction();
         try {
@@ -219,15 +279,26 @@ class Contact extends BaseModel
         }
     }
 
-    private function deleteRelatedPhones($contacts_id)
+    /**
+     * @param $contacts_id
+     * @return bool
+     */
+    private function deleteRelatedPhones(string $contacts_id): bool
     {
         $query = "DELETE FROM {$this->phonesTable} WHERE contacts_id=:contacts_id";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(":contacts_id", $contacts_id);
-        $stmt->execute();
+        $result = $stmt->execute();
+        $stmt->closeCursor();
+        return $result;
     }
 
-    private function createRelatedPhone($contacts_id, array $phones)
+    /**
+     * @param $contacts_id
+     * @param array $phones
+     * @return bool
+     */
+    private function createRelatedPhone(string $contacts_id, array $phones): bool
     {
         $data = $this->prepareDataInsert($phones);
 
@@ -239,10 +310,17 @@ class Contact extends BaseModel
             $stmt->bindValue("{$data[2][$i]}", $data[3][$i]);
         }
 
-        $stmt->execute();
+        $result = $stmt->execute();
+        $stmt->closeCursor();
+        return $result;
     }
 
-    public function deleteUserContact($user_id, $contact_id)
+    /**
+     * @param $user_id
+     * @param $contact_id
+     * @return bool
+     */
+    public function deleteUserContact(string $user_id, string $contact_id): bool
     {
         $query = "DELETE FROM {$this->table} WHERE id=:id and users_id=:users_id";
         $stmt = $this->pdo->prepare($query);

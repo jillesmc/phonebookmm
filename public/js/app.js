@@ -58,9 +58,14 @@ var AppHome = {
         });
 
         // Quando digita no campo de busca
+        let timeOut = null;
         AppHome.s.inputSearch.keyup(function () {
-            AppHome.s.buttonSearchCleanner.toggle(Boolean($(this).val()));
-            AppHome.searchContacts($(this).val());
+            let input = this;
+            clearTimeout(timeOut);
+            timeOut = setTimeout(function () {
+                AppHome.s.buttonSearchCleanner.toggle(Boolean($(input).val()));
+                AppHome.searchContacts($(input).val());
+            }, 500);
         });
 
         // Quando clica para limpar a busca

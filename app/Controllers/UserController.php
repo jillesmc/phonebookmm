@@ -9,18 +9,32 @@ use Core\Container;
 use Core\Response;
 use Core\Validator;
 
+/**
+ * Class UserController
+ * @package App\Controllers
+ */
 class UserController extends BaseController
 {
     use AuthenticateTrait;
 
+    /**
+     * @var \Core\BaseModel
+     */
     private $user;
 
+    /**
+     * UserController constructor.
+     */
     public function __construct()
     {
         parent::__construct();
         $this->user = Container::getModel('User');
     }
 
+    /**
+     * @param $user_id
+     * @return bool
+     */
     public function show($user_id)
     {
         if (Auth::getUserId() != $user_id) {
@@ -44,6 +58,10 @@ class UserController extends BaseController
         ]);
     }
 
+    /**
+     * @param $request
+     * @return bool
+     */
     public function store($request)
     {
         $data = [
@@ -54,9 +72,11 @@ class UserController extends BaseController
             'password' => $request->post->password,
         ];
 
-        if ($errors = Validator::make($data, $this->user->rulesCreate())) {
-            return Response::json(Response::BAD_REQUEST, [
-                'error' => 'Algo não deu certo na validação'
+        if ($errors = Validator::make($data, $this->user->rulesCreate($request->post->email))) {
+            return Response::json(Response::CONFLICT, [
+                'status' => 'error',
+                'message' => 'Algo não deu certo na validação',
+                'data' => $errors
             ]);
         }
 
@@ -77,6 +97,11 @@ class UserController extends BaseController
         }
     }
 
+    /**
+     * @param $user_id
+     * @param $request
+     * @return bool
+     */
     public function update($user_id, $request)
     {
         if (Auth::getUserId() != $user_id) {

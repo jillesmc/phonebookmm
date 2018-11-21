@@ -57,12 +57,12 @@ var Signup = {
                     contentType: "application/json",
                     url: "/users",
                     data: JSON.stringify({
-                        name : form.name.value,
-                        email : form.email.value,
-                        phone : form.phone.value,
-                        password : form.password.value
+                        name: form.name.value,
+                        email: form.email.value,
+                        phone: form.phone.value,
+                        password: form.password.value
                     }),
-                    success: function( result ) {
+                    success: function (result) {
                         FlashMessage.show([
                             ['success', 'Usuário criado com sucesso! Redirecionando para login...']
                         ]);
@@ -72,14 +72,9 @@ var Signup = {
                         }, 4000);
                     },
                     error: function (xhr, textStatus) {
-                        switch (xhr.status) {
-                            default:
-                                FlashMessage.show([
-                                    ['danger', xhr.responseJSON.message]
-                                ]);
-                                break;
-                        }
-
+                        FlashMessage.show([
+                            ['danger', 'Dados inválidos ou usuário já registrado no sistema']
+                        ]);
                     }
                 });
             }

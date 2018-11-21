@@ -3,8 +3,18 @@
 namespace Core;
 
 
+/**
+ * Class Validator
+ * @package Core
+ */
 class Validator
 {
+    /**
+     * @param $ruleValue
+     * @param $ruleKey
+     * @param $dataValue
+     * @return array
+     */
     private static function simpleRules($ruleValue, $ruleKey, $dataValue)
     {
         $errors = [];
@@ -33,6 +43,12 @@ class Validator
         return $errors;
     }
 
+    /**
+     * @param $ruleValue
+     * @param $ruleKey
+     * @param $dataValue
+     * @return array
+     */
     private static function colonRules($ruleValue, $ruleKey, $dataValue)
     {
         $errors = [];
@@ -49,8 +65,6 @@ class Validator
                 }
                 break;
             case 'unique':
-                $objModel = "\\App\\Models\\" . $item[1];
-//                $model = new $objModel(Database::getDataBase());
                 $model = Container::getModel($item[1]);
                 $find = $model->findByField($ruleKey, $dataValue);
                 if ($find && $find->{$item[2]}) {
@@ -67,6 +81,11 @@ class Validator
         return $errors;
     }
 
+    /**
+     * @param array $data
+     * @param array $rules
+     * @return array|bool
+     */
     public static function make(array $data, array $rules)
     {
         $errors = [];

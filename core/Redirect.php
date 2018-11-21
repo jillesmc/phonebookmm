@@ -3,9 +3,17 @@
 namespace Core;
 
 
+/**
+ * Class Redirect
+ * @package Core
+ */
 class Redirect
 {
-    public static function route($url, $with = [])
+    /**
+     * @param string $url
+     * @param array $with
+     */
+    public static function route(string $url, array $with = [])
     {
         if (count($with) > 0) {
             foreach ($with as $key => $value) {

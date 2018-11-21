@@ -9,12 +9,25 @@ use Core\Container;
 use Core\Response;
 use Core\Validator;
 
+/**
+ * Class ContactController
+ * @package App\Controllers
+ */
 class ContactController extends BaseController
 {
     use AuthenticateTrait;
+    /**
+     * @var \Core\BaseModel
+     */
     private $contact;
+    /**
+     * @var \Core\BaseModel
+     */
     private $phone;
 
+    /**
+     * ContactController constructor.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -22,6 +35,11 @@ class ContactController extends BaseController
         $this->phone = Container::getModel('ContactPhone');
     }
 
+    /**
+     * @param $user_id
+     * @param $request
+     * @return bool
+     */
     public function index($user_id, $request)
     {
         if (Auth::getUserId() != $user_id) {
@@ -48,6 +66,11 @@ class ContactController extends BaseController
         ]);
     }
 
+    /**
+     * @param $user_id
+     * @param $contact_id
+     * @return bool
+     */
     public function show($user_id, $contact_id)
     {
         $contact = $this->contact->findUserContact($user_id, $contact_id);
@@ -67,6 +90,11 @@ class ContactController extends BaseController
 
     }
 
+    /**
+     * @param $user_id
+     * @param $request
+     * @return bool
+     */
     public function store($user_id, $request)
     {
         if (Auth::getUserId() != $user_id) {
@@ -132,6 +160,12 @@ class ContactController extends BaseController
         }
     }
 
+    /**
+     * @param $user_id
+     * @param $contact_id
+     * @param $request
+     * @return bool
+     */
     public function update($user_id, $contact_id, $request)
     {
         if (Auth::getUserId() != $user_id) {
@@ -199,6 +233,11 @@ class ContactController extends BaseController
         }
     }
 
+    /**
+     * @param $user_id
+     * @param $contact_id
+     * @return bool
+     */
     public function destroy($user_id, $contact_id)
     {
         if (Auth::getUserId() != $user_id) {

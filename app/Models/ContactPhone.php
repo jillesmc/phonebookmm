@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Core\BaseModel;
 
+/**
+ * Class ContactPhone
+ * @package App\Models
+ */
 class ContactPhone extends BaseModel
 {
     protected $table = 'contacts';
 
-    public function rulesCreate(){
-        return [
-            'phone' => 'phone',
-        ];
-    }
-
-    public function rulesUpdate($id){
+    /**
+     * @return array
+     */
+    public function rulesCreate(): array
+    {
         return [
             'phone' => 'phone',
         ];

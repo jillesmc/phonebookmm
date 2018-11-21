@@ -3,16 +3,30 @@
 namespace Core;
 
 
+/**
+ * Class Route
+ * @package Core
+ */
 class Route
 {
+    /**
+     * @var
+     */
     private $routes;
 
+    /**
+     * Route constructor.
+     * @param array $routes
+     */
     public function __construct(array $routes)
     {
         $this->setRoutes($routes);
         $this->run();
     }
 
+    /**
+     * @param array $routes
+     */
     private function setRoutes(array $routes)
     {
         $parsedRoutes = [];
@@ -28,8 +42,12 @@ class Route
         $this->routes = $parsedRoutes;
     }
 
+    /**
+     * @return \stdClass
+     */
     private function getRequest()
     {
+        //@to-do implementar classe de request
         $obj = new \stdClass;
         $obj->get = null;
         $obj->post = null;
@@ -47,21 +65,33 @@ class Route
         return $obj;
     }
 
+    /**
+     * @return mixed
+     */
     private function getRequestMethod()
     {
         return $_SERVER['REQUEST_METHOD'];
     }
 
+    /**
+     * @return null
+     */
     private function getRequestContentType()
     {
         return $_SERVER['HTTP_CONTENT_TYPE'] ?? null;
     }
 
+    /**
+     * @return mixed
+     */
     private function getUrl()
     {
         return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     }
 
+    /**
+     *
+     */
     private function run()
     {
         $routeFound = false;

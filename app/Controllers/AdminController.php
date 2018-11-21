@@ -7,6 +7,10 @@ use Core\BaseController;
 use Core\Container;
 use Core\Response;
 
+/**
+ * Class AdminController
+ * @package App\Controllers
+ */
 class AdminController extends BaseController
 {
     use AuthenticateAdminTrait;
@@ -15,6 +19,9 @@ class AdminController extends BaseController
     private $admin;
     private $contact;
 
+    /**
+     * AdminController constructor.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -23,14 +30,21 @@ class AdminController extends BaseController
         $this->contact = Container::getModel('Contact');
     }
 
+    /**
+     * @return mixed
+     */
     public function index()
     {
         $this->setPageTitle('Dashboard');
         return $this->renderView('/adm/dashboard', 'layout-admin-dashboard');
     }
 
+    /**
+     * Retorna os dados do dashboard do admin
+     */
     public function data()
     {
+        try{
         Response::json(Response::OK, [
             'status' => 'success',
             'data' => [
@@ -44,8 +58,18 @@ class AdminController extends BaseController
                 'contacts_per_zone_code' => $this->contact->countPerZoneCode()
             ]
         ]);
+        }catch (\Exception $e){
+            Response::json(Response::INTERNAL_SERVER_ERROR, [
+                'status' => 'error',
+                'message' => 'Não foi possível consultar banco de dados',
+            ]);
+        }
     }
 
+    /**
+     * @param $admin_id
+     * @return bool
+     */
     public function show($admin_id)
     {
         $adminUser = $this->admin->find($admin_id);

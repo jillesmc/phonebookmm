@@ -2,25 +2,38 @@
 
 namespace Core;
 
+/**
+ * Class Response
+ * @package Core
+ */
 class Response
 {
-    CONST OK = 200;
-    CONST CREATED = 201;
-    CONST NO_CONTENT = 204; //PUT, POST AND DELETE WITH NO RESPONSE MESSAGE BODY
-    CONST BAD_REQUEST = 400;
-    CONST UNAUTHORIZED = 401; //FORGOT SOME CREDENTIAL INFORMATION
-    CONST FORBIDDEN = 403;
-    CONST NOT_FOUND = 404;
-    CONST METHOD_NOT_ALLOWED = 405;
-    CONST CONFLICT = 409;
-    CONST INTERNAL_SERVER_ERROR= 500;
+    const OK = 200;
+    const CREATED = 201;
+    const NO_CONTENT = 204;
+    const BAD_REQUEST = 400;
+    const UNAUTHORIZED = 401;
+    const FORBIDDEN = 403;
+    const NOT_FOUND = 404;
+    const METHOD_NOT_ALLOWED = 405;
+    const CONFLICT = 409;
+    const INTERNAL_SERVER_ERROR = 500;
 
-    public static function json($statusCode, $messageArray = [])
+    /**
+     * @param int $statusCode
+     * @param array $messageArray
+     * @return bool
+     */
+    public static function json(int $statusCode, array $messageArray = []): bool
     {
-        http_response_code($statusCode);
-        header("Content-Type: application/json; charset=UTF-8");
-        echo json_encode($messageArray);
-        return true;
+        try {
+            http_response_code($statusCode);
+            header("Content-Type: application/json; charset=UTF-8");
+            echo json_encode($messageArray);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
 }

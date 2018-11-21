@@ -2,6 +2,10 @@
 
 namespace Core;
 
+/**
+ * Trait AuthenticateAdminTrait
+ * @package Core
+ */
 trait AuthenticateAdminTrait
 {
     public function login()
@@ -23,6 +27,10 @@ trait AuthenticateAdminTrait
         ]);
     }
 
+    /**
+     * @param $request
+     * @return bool
+     */
     public function auth($request)
     {
         $result = Container::getModel('Admin')

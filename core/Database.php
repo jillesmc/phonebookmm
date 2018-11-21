@@ -5,11 +5,18 @@ namespace Core;
 use PDO;
 use PDOException;
 
+/**
+ * Class Database
+ * @package Core
+ */
 class Database
 {
-    public static function getDataBase()
+    /**
+     * @return PDO
+     */
+    public static function getDataBase(): PDO
     {
-        $conf = include  __DIR__ . "/../app/database.php";;
+        $conf = include __DIR__ . "/../app/database.php";;
 
         switch ($conf['driver']) {
             case 'sqlite':
@@ -43,6 +50,7 @@ class Database
                 }
                 break;
         }
+        return null;
     }
 
 }

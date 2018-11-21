@@ -2,6 +2,10 @@
 
 namespace Core;
 
+/**
+ * Trait AuthenticateTrait
+ * @package Core
+ */
 trait AuthenticateTrait
 {
     public function login()
@@ -30,6 +34,10 @@ trait AuthenticateTrait
         ]);
     }
 
+    /**
+     * @param $request
+     * @return bool
+     */
     public function auth($request)
     {
         $result = Container::getModel('User')

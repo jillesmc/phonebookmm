@@ -4,9 +4,19 @@ namespace Core;
 
 use PDO;
 
+/**
+ * Class BaseModel
+ * @package Core
+ */
 abstract class BaseModel
 {
+    /**
+     * @var PDO
+     */
     protected $pdo;
+    /**
+     * @var
+     */
     protected $table;
 
     /**
@@ -18,7 +28,10 @@ abstract class BaseModel
         $this->pdo = $pdo;
     }
 
-    public function all()
+    /**
+     * @return array of stdClass
+     */
+    public function all(): array
     {
         $query = "SELECT * FROM {$this->table}";
         $stmt = $this->pdo->prepare($query);
@@ -28,9 +41,13 @@ abstract class BaseModel
         return $result;
     }
 
-    public function find($id)
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function find(string $id)
     {
-        $query = "SELECT * FROM {$this->table} WHERE id=:id";
+        $query = "SELECT * FROM {$this->table} WHERE id=:id LIMIT 1";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(':id', $id);
         $stmt->execute();
@@ -39,9 +56,14 @@ abstract class BaseModel
         return $result;
     }
 
-    public function findByField($field, $value)
+    /**
+     * @param $field
+     * @param $value
+     * @return mixed
+     */
+    public function findByField(string $field, string $value)
     {
-        $query = "SELECT * FROM {$this->table} WHERE {$field}=:{$field}";
+        $query = "SELECT * FROM {$this->table} WHERE {$field}=:{$field} LIMIT 1";
         $stmt = $this->pdo->prepare($query);
         $stmt->bindValue(":{$field}", $value);
         $stmt->execute();
@@ -50,7 +72,11 @@ abstract class BaseModel
         return $result;
     }
 
-    public function create(array $data)
+    /**
+     * @param array $data
+     * @return bool
+     */
+    public function create(array $data): bool
     {
         $data = $this->prepareDataInsert($data);
         $query = "INSERT INTO {$this->table} ({$data[0]}) VALUES ({$data[1]})";
@@ -65,7 +91,11 @@ abstract class BaseModel
         return $result;
     }
 
-    protected function prepareDataInsert(array $data)
+    /**
+     * @param array $data
+     * @return array
+     */
+    protected function prepareDataInsert(array $data): array
     {
         $strKeys = "";
         $strBinds = "";
@@ -90,7 +120,12 @@ abstract class BaseModel
         ];
     }
 
-    public function update(array $data, $id)
+    /**
+     * @param array $data
+     * @param $id
+     * @return bool
+     */
+    public function update(array $data, string $id): bool
     {
         $data = $this->prepareDataUpdate($data);
         $query = "UPDATE {$this->table} SET {$data[0]},updated_at=NOW() WHERE id=:id";
@@ -105,7 +140,11 @@ abstract class BaseModel
 
     }
 
-    protected function prepareDataUpdate(array $data)
+    /**
+     * @param array $data
+     * @return array
+     */
+    protected function prepareDataUpdate(array $data): array
     {
         $strKeysBinds = "";
         $binds = [];
@@ -125,7 +164,11 @@ abstract class BaseModel
         ];
     }
 
-    public function delete($id)
+    /**
+     * @param $id
+     * @return bool
+     */
+    public function delete(string $id): bool
     {
         $query = "DELETE FROM {$this->table} WHERE id=:id";
         $stmt = $this->pdo->prepare($query);

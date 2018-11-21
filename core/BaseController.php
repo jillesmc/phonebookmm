@@ -3,6 +3,10 @@
 namespace Core;
 
 
+/**
+ * Class BaseController
+ * @package Core
+ */
 abstract class BaseController
 {
     protected $view;
@@ -16,7 +20,12 @@ abstract class BaseController
     }
 
 
-    protected function renderView($viewPath, $layoutPath = null)
+    /**
+     * @param string $viewPath
+     * @param string $layoutPath
+     * @return mixed
+     */
+    protected function renderView(string $viewPath, string $layoutPath = null)
     {
         $this->viewPath = $viewPath;
         $this->layoutPath = $layoutPath;
@@ -45,12 +54,19 @@ abstract class BaseController
         }
     }
 
-    protected function setPageTitle($pageTitle)
+    /**
+     * @param $pageTitle
+     */
+    protected function setPageTitle(string $pageTitle)
     {
         $this->pageTitle = $pageTitle;
     }
 
-    protected function getPageTitle($separator = null)
+    /**
+     * @param string $separator
+     * @return string
+     */
+    protected function getPageTitle(string $separator = null)
     {
         if ($separator) {
             return $this->pageTitle . " " . $separator . " ";
