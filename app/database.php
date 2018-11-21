@@ -1,10 +1,6 @@
 <?php
 return [
-
     'driver' => 'mysql',
-    'sqlite' => [
-        'database' => 'database.db'
-    ],
     'mysql' => [
         'host' => 'localhost',
         'database' => 'phonebook',

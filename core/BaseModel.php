@@ -10,13 +10,7 @@ use PDO;
  */
 abstract class BaseModel
 {
-    /**
-     * @var PDO
-     */
     protected $pdo;
-    /**
-     * @var
-     */
     protected $table;
 
     /**
