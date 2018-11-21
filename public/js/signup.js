@@ -71,8 +71,15 @@ var Signup = {
                             window.location.href = '/login';
                         }, 4000);
                     },
-                    complete: function (xhr, textStatus) {
-                        console.log(xhr.status);
+                    error: function (xhr, textStatus) {
+                        switch (xhr.status) {
+                            default:
+                                FlashMessage.show([
+                                    ['danger', xhr.responseJSON.message]
+                                ]);
+                                break;
+                        }
+
                     }
                 });
             }

@@ -1,46 +1,384 @@
 var AppHome = {
-    init: function () {
-        AppHome.bindActions();
-        AppHome.getUserData();
-        AppHome.prepareSearchField();
-        AppHome.floatTableHeader();
-        AppHome.modalViewActions();
-        AppHome.loadContacts();
-        AppHome.resetModalAfterHide();
-        AppHome.loadDataForViewContactModal();
-        AppHome.loadDataForEditContactModal();
-        AppHome.loadDataForDeleteContactModal();
-        AppHome.loadDataForAccountInfoModal();
+    s: {
+        loader: $('#loader'),
+        topBarUserName: $('#top-bar .user-name'),
+
+        buttonLogout: $('#logout'),
+        inputSearch: $('#inputSearch'),
+        buttonSearchCleanner: $('.search__clear-button'),
+        tableContacts: $('table.contacts-table'),
+        tableContactsBody: $('table.contacts-table tbody'),
+
+        modalContactAdd: $('#add-contact-modal'),
+        modalContactView: $('#view-contact-modal'),
+        modalContactDelete: $('#delete-contact-modal'),
+        modalContactEdit: $('#edit-contact-modal'),
+        modalAccountInfo: $('#account-info-modal'),
+        buttonModalContactEdit: $('#view-contact-modal__edit-button'),
+        buttonModalContactDelete: $('#view-contact-modal__remove-button'),
+
+        buttonDelete: $('#deleteContactButton'),
+
+        formContactAdd: $('#addContactForm'),
+        formContactEdit: $('#editContactForm'),
+        formAccountInfo: $('#accountInfoForm'),
+
+        buttonAddPhones: $('.form-contact__btn--add-more-phones'),
+        buttonDeletePhone: $('.phone--remove'),
+        inputPhones: $('input[name="inputPhone[]"]'),
+
+        inputAccountInfoPhone: $('#accountInputPhone'),
     },
-    bindActions: function () {
-        $('#logout').click(function () {
+
+    init: function () {
+        AppHome.initPlugins();
+        AppHome.bindUiActions();
+        AppHome.bindFormValidations();
+        AppHome.initUiElements();
+
+        AppHome.loadUserData(); //ajax
+        AppHome.loadContactsList(); //ajax
+    },
+
+    initPlugins: function () {
+        //Tabela com cabecalho fixo
+        AppHome.s.tableContacts.floatThead({top: 67});
+    },
+
+    initUiElements: function () {
+        AppHome.maskPhone();
+        AppHome.maskPhone(AppHome.s.inputAccountInfoPhone);
+    },
+
+    bindUiActions: function () {
+        // Quando clica no logout
+        AppHome.s.buttonLogout.click(function () {
             sessionStorage.clear();
             window.location.href = '/'
         });
-    },
-    prepareSearchField: function () {
-        let searchInput = $("#inputSearch");
-        let search_cleaner = $(".search__clear-button");
 
-        searchInput.keyup(function () {
-            search_cleaner.toggle(Boolean($(this).val()));
+        // Quando digita no campo de busca
+        AppHome.s.inputSearch.keyup(function () {
+            AppHome.s.buttonSearchCleanner.toggle(Boolean($(this).val()));
             AppHome.searchContacts($(this).val());
         });
-        search_cleaner.toggle(Boolean(searchInput.val()));
-        search_cleaner.click(function () {
-            searchInput.val('').focus();
+
+        // Quando clica para limpar a busca
+        AppHome.s.buttonSearchCleanner.click(function () {
+            AppHome.s.inputSearch.val('').focus();
             AppHome.searchContacts($(this).val());
             $(this).hide();
         });
-    },
-    searchContacts: function (query) {
-        let sessionData = AppHome.loadSession();
-        let userId = sessionData.user.id;
 
-        let loader = $('#loader');
-        let tableBody = $('.contacts-table tbody');
-        tableBody.html('');
-        loader.show();
+        // Quando clica no editar do modal de ve
+        AppHome.s.buttonModalContactEdit.click(function () {
+            AppHome.s.modalContactView.removeClass('fade');
+            AppHome.s.modalContactEdit.removeClass('fade');
+            AppHome.s.modalContactView.modal('hide');
+            AppHome.s.modalContactEdit.modal('show');
+            AppHome.s.modalContactView.addClass('fade');
+            AppHome.s.modalContactEdit.addClass('fade');
+
+            AppHome.loadContactToEditForm();
+        });
+
+        // Quando clica no deletar do modal de ver
+        AppHome.s.buttonModalContactDelete.click(function () {
+            AppHome.s.modalContactView.removeClass('fade');
+            AppHome.s.modalContactDelete.removeClass('fade');
+            AppHome.s.modalContactView.modal('hide');
+            AppHome.s.modalContactDelete.modal('show');
+            AppHome.s.modalContactView.addClass('fade');
+            AppHome.s.modalContactDelete.addClass('fade');
+
+            AppHome.loadContactToModalContent(AppHome.s.modalContactDelete);
+        });
+
+        // Quando exibe o modal de ver
+        AppHome.s.modalContactView.on('show.bs.modal', function (event) {
+            let modal = $(event.target);
+            let dataContainer;
+            if (event.relatedTarget !== undefined) {
+                dataContainer = $(event.relatedTarget.closest('tr'));
+                sessionStorage.setItem('contactId', dataContainer.data('id'));
+            }
+
+            AppHome.loadContactToModalContent(modal);
+        });
+
+        // Quando exibe o modal de editar
+        AppHome.s.modalContactEdit.on('show.bs.modal', function (event) {
+            if (event.relatedTarget !== undefined) {
+                dataContainer = $(event.relatedTarget.closest('tr'));
+                sessionStorage.setItem('contactId', dataContainer.data('id'));
+            }
+
+            AppHome.loadContactToEditForm();
+        });
+
+        // Quando exibe o modal de deletar
+        AppHome.s.modalContactDelete.on('show.bs.modal', function (event) {
+            let modal = $('#delete-contact-modal');
+            if (event.relatedTarget !== undefined) {
+                dataContainer = $(event.relatedTarget.closest('tr'));
+                sessionStorage.setItem('contactId', dataContainer.data('id'));
+            }
+            AppHome.loadContactToModalContent(modal);
+        });
+
+        // Quando exibe o modal de editar info da conta
+        AppHome.s.modalAccountInfo.on('show.bs.modal', function (event) {
+            AppHome.loadUserToAccountInfoForm();
+        });
+
+        // Quando oculta o modal de editar
+        AppHome.s.modalContactEdit.on('hide.bs.modal', function (e) {
+            AppHome.clearForms();
+        });
+
+        // Quando oculta o modal de adicionar
+        AppHome.s.modalContactAdd.on('hide.bs.modal', function (e) {
+            AppHome.clearForms();
+        });
+
+        // Quando oculta o modal de deletar
+        AppHome.s.modalContactDelete.on('hide.bs.modal', function (e) {
+            AppHome.clearDeleteContactData();
+        });
+
+        // Adicionar novos campos de telefone dinamicamente
+        AppHome.s.buttonAddPhones.click(function (event) {
+            event.preventDefault();
+            let removeHtml = '<button type="button" class="phone--remove btn btn-light"><span class="oi oi-x' +
+                ' text-danger"></span></button>';
+            let removeButton = $(removeHtml);
+            let container = $(this).closest('.row').prev();
+            let nextChildIdNumber = container.children().length;
+            let clonedPhoneField = container.children().first().clone();
+            let inputPhoneField = clonedPhoneField.find('input');
+
+            //prepara novo campo de telefone
+            inputPhoneField.attr('name', 'inputPhone[' + nextChildIdNumber + ']');
+            inputPhoneField.removeAttr('aria-invalid');
+            inputPhoneField.removeAttr('aria-describedby');
+            inputPhoneField.val('');
+            inputPhoneField.removeClass('is-invalid');
+            inputPhoneField.next('small').remove();
+            inputPhoneField.parent().prev().remove();
+
+            AppHome.maskPhone(inputPhoneField);
+
+            clonedPhoneField.find('.input-group').append(removeButton);
+            container.append(clonedPhoneField);
+
+            inputPhoneField.rules('add',
+                {
+                    minlength: 12,
+                    messages: {
+                        minlength: "Telefone incompleto"
+                    }
+                });
+
+            AppHome.attachButtonDeletePhone();
+            inputPhoneField.focus();
+
+            AppHome.s.formContactAdd.validate();
+        });
+
+
+        // Quando clica no botão deletar final
+        AppHome.s.buttonDelete.click(function (event) {
+            AppHome.processContactDelete();
+        });
+
+    },
+
+    bindFormValidations: function () {
+
+        // Validação formulário que adiciona contato
+        AppHome.s.formContactAdd.validate({
+            rules: {
+                name: 'required',
+                email: {
+                    email: true,
+                },
+                'inputPhone[]': {
+                    minlength: 12,
+                },
+                password: 'required',
+            },
+            messages: {
+                name: 'Campo requerido',
+                email: {
+                    email: 'E-mail inválido',
+                },
+                'inputPhone[]': {
+                    minlength: 'Telefone incompleto',
+                },
+                password: 'Campo requerido',
+            },
+            errorElement: 'small',
+            errorClass: 'is-invalid',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                if (element.next('button').length !== 0)
+                    error.appendTo($(element.parent()));
+                else
+                    error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass);
+            },
+            submitHandler: function (form) {
+                AppHome.processFormContactAdd(form);
+            }
+        });
+
+        // Validação formulário que edita contato
+        AppHome.s.formContactEdit.validate({
+            rules: {
+                name: 'required',
+                email: {
+                    email: true,
+                },
+                'inputPhone[]': {
+                    minlength: 12,
+                },
+                password: 'required',
+            },
+            messages: {
+                name: 'Campo requerido',
+                email: {
+                    email: 'E-mail inválido',
+                },
+                'inputPhone[]': {
+                    minlength: 'Telefone incompleto',
+                },
+                password: 'Campo requerido',
+            },
+            errorElement: 'small',
+            errorClass: 'is-invalid',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                if (element.next('button').length !== 0)
+                    error.appendTo($(element.parent()));
+                else
+                    error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass);
+            },
+            submitHandler: function (form) {
+                AppHome.processFormContactEdit(form)
+            }
+        });
+
+
+        // Validação formulário que edita conta
+        AppHome.s.formAccountInfo.validate({
+            rules: {
+                name: 'required',
+                email: {
+                    required: true,
+                    email: true,
+                },
+                phone: {
+                    required: true,
+                    minlength: 12,
+                },
+                passwordPrevious: 'required',
+                password: 'required',
+                passwordConfirm: {
+                    required: true,
+                    equalTo: '#accountInputPassword',
+                },
+            },
+            messages: {
+                name: 'Campo requerido',
+                email: {
+                    required: 'Campo requerido',
+                    email: 'E-mail inválido',
+                },
+                phone: {
+                    required: 'Campo requerido',
+                    minlength: 'Telefone incompleto',
+                },
+                passwordPrevious: 'Campo requerido',
+                password: 'Campo requerido',
+                passwordConfirm: {
+                    required: 'Campo requerido',
+                    equalTo: 'Senhas não conferem',
+                },
+            },
+            errorElement: 'small',
+            errorClass: 'is-invalid',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                error.insertAfter(element);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass(errorClass);
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass(errorClass);
+            },
+            submitHandler: function (form) {
+                AppHome.processFormAccountInfo(form);
+            }
+        });
+    },
+
+    // AJAX carrega a lista de contatos
+    loadContactsList: function () {
+        let user_id = AppHome.getSessionData().user.id;
+        AppHome.s.loader.show();
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + user_id + "/contacts",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                AppHome.s.loader.hide();
+
+                AppHome.buildContactTable(response.data);
+            },
+            error: function (xhr, textStatus) {
+                AppHome.s.loader.hide();
+                switch (xhr.status) {
+                    case 404:
+                        FlashMessage.show([
+                            ['success', 'Sua lista de contatos está vazia. Vamos começar']
+                        ]);
+                        AppHome.buildContactTable([]);
+                        break;
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+
+                }
+
+            }
+        });
+
+    },
+
+    // AJAX carrega a lista de contatos com base na pesquisa
+    searchContacts: function (query) {
+        let userId = AppHome.getSessionData().user.id;
+
+        AppHome.s.tableContactsBody.html('');
+        AppHome.s.loader.show();
 
         $.ajax({
             type: 'GET',
@@ -49,14 +387,14 @@ var AppHome = {
             data: {'q': query},
             url: "/users/" + userId + "/contacts",
             beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
             success: function (response) {
-                loader.hide();
+                AppHome.s.loader.hide();
                 AppHome.buildContactTable(response.data);
             },
             error: function (xhr, textStatus) {
-                loader.hide();
+                AppHome.s.loader.hide();
                 switch (xhr.status) {
                     case 404:
                         FlashMessage.show([
@@ -75,10 +413,359 @@ var AppHome = {
             }
         });
     },
-    floatTableHeader: function () {
-        let table = $('table.contacts-table');
-        table.floatThead({top: 67});
+
+    // AJAX carrega os dados o usuario
+    loadUserData: function () {
+
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            url: "/users/" + AppHome.getSessionData().user.id,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                let userName = response.data.name.split(' ')[0]; //firstname
+                AppHome.s.topBarUserName.html(userName);
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    case 401:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        setTimeout(function () {
+                            window.location.href = '/'
+                        }, 2000);
+                        break;
+                }
+
+            }
+        });
+
     },
+
+    // AJAX carrega os dados do contato para os modals de ver ou deletar
+    loadContactToModalContent: function (modal) {
+        let userId = AppHome.getSessionData().user.id;
+        let contactId = sessionStorage.getItem('contactId');
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + userId + "/contacts/" + contactId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                let phonesNotesHtml = '';
+
+                phonesNotesHtml += '<div class="mb-4">' +
+                    '<h5>' + response.data.name + '</h5>' +
+                    '</div>';
+
+                if (response.data.email) {
+                    phonesNotesHtml += '<p>' +
+                        '<div class="float-left pr-3 text-right" ><span class="oi oi-envelope-closed' +
+                        ' text-muted"></span></div>' +
+                        '<a href="mailto:' + response.data.email + '" class="">' + response.data.email + '</a>' +
+                        '</p>';
+                }
+
+                for (let i = 0; i < response.data.phones.length; i++) {
+                    let numberOnlyPhone = response.data.phones[i].phone.replace(' ', '').replace('-', '');
+                    phonesNotesHtml += '<p>' +
+                        '<div class="float-left pr-3 text-right" ><span class="oi oi-phone' +
+                        ' text-muted"></span></div>' +
+                        '<a href="tel:' + numberOnlyPhone + '">' +
+                        response.data.phones[i].phone +
+                        '</a>' +
+                        '</p>';
+                }
+
+                if (response.data.note) {
+                    phonesNotesHtml += '<p>' +
+                        '<div class="float-left pr-3 text-right"><span class="oi oi-book' +
+                        ' text-muted"></span></div>' +
+                        response.data.note +
+                        '</p>';
+                }
+
+                modal.find('.view-contact-data').html(phonesNotesHtml);
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+            }
+        });
+    },
+
+    // AJAX carrega os dados do contato para o formulário de editar
+    loadContactToEditForm: function () {
+        let contactId = sessionStorage.getItem('contactId');
+        let userId = AppHome.getSessionData().user.id;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + userId + "/contacts/" + contactId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                AppHome.s.formContactEdit.find('input[name="name"]').val(response.data.name);
+                AppHome.s.formContactEdit.find('input[name="email"]').val(response.data.email);
+                AppHome.s.formContactEdit.find('textarea[name="note"]').val(response.data.note);
+
+                for (let i = 0; i < response.data.phones.length; i++) {
+                    let index = i !== 0 ? i : '';
+
+                    if (AppHome.s.formContactEdit.find('input[name="inputPhone[' + index + ']"]').length === 0) {
+                        AppHome.s.buttonAddPhones.click();
+                    }
+
+                    AppHome.s.formContactEdit.find('input[name="inputPhone[' + index + ']"]').val(response.data.phones[i].phone);
+
+                }
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+            }
+        });
+    },
+
+    // AJAX Carrega os dados do usuário para o formulário de informações da conta
+    loadUserToAccountInfoForm: function () {
+        let userId = AppHome.getSessionData().user.id;
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + userId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                AppHome.s.formAccountInfo.find('input[name="name"]').val(response.data.name);
+                AppHome.s.formAccountInfo.find('input[name="email"]').val(response.data.email);
+                AppHome.s.formAccountInfo.find('input[name="phone"]').val(response.data.phone);
+
+                AppHome.s.formAccountInfo.find('input[name="password"]').val('');
+                AppHome.s.formAccountInfo.find('input[name="passwordPrevious"]').val('');
+                AppHome.s.formAccountInfo.find('input[name="passwordConfirm"]').val('');
+
+                AppHome.s.formAccountInfo.find('input.is-invalid').each(function () {
+                    $(this).removeAttr('aria-invalid');
+                    $(this).removeAttr('aria-describedby');
+                    $(this).removeClass('is-invalid');
+                    $(this).removeClass('is-invalid');
+                    $(this).next('small').remove();
+                });
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+            }
+        });
+    },
+
+
+// AJAX adiciona contato
+    processFormContactAdd: function (form) {
+        let sessionData = AppHome.getSessionData();
+        let userId = sessionData.user.id;
+        let phones = [];
+
+        $(form).find('input[name^="inputPhone"]').each(function () {
+            phones.push($(this).val());
+        });
+
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json",
+            url: "/users/" + userId + "/contacts",
+            data: JSON.stringify({
+                name: form.name.value,
+                email: form.email.value,
+                phones: phones,
+                note: form.note.value
+            }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                sessionStorage.setItem('contactId', response.data.contactId);
+
+                FlashMessage.show([
+                    ['success', 'Contato criado com sucesso']
+                ]);
+
+                AppHome.loadContactsList();
+                AppHome.s.modalContactAdd.removeClass('fade');
+                AppHome.s.modalContactView.removeClass('fade');
+                AppHome.s.modalContactAdd.modal('hide');
+                AppHome.s.modalContactView.modal('show');
+                AppHome.s.modalContactAdd.addClass('fade');
+                AppHome.s.modalContactView.addClass('fade');
+
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+
+            }
+        });
+    },
+
+    // AJAX edita contato
+    processFormContactEdit: function (form) {
+        let sessionData = AppHome.getSessionData();
+        let userId = sessionData.user.id;
+        let contactId = sessionStorage.getItem('contactId');
+        let phones = [];
+
+        $(form).find('input[name^="inputPhone"]').each(function () {
+            phones.push($(this).val());
+        });
+
+        $.ajax({
+            type: 'PUT',
+            contentType: "application/json",
+            url: "/users/" + userId + "/contacts/" + contactId,
+            data: JSON.stringify({
+                name: form.name.value,
+                email: form.email.value,
+                phones: phones,
+                note: form.note.value
+            }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                sessionStorage.setItem('contactId', response.data.contactId);
+
+                FlashMessage.show([
+                    ['success', 'Contato editado com sucesso']
+                ]);
+
+                AppHome.loadContactsList();
+                AppHome.s.modalContactEdit.removeClass('fade');
+                AppHome.s.modalContactView.removeClass('fade');
+                AppHome.s.modalContactEdit.modal('hide');
+                AppHome.s.modalContactView.modal('show');
+                AppHome.s.modalContactEdit.addClass('fade');
+                AppHome.s.modalContactView.addClass('fade');
+
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+
+            }
+        });
+
+    },
+
+    // AJAX edita informações da conta
+    processFormAccountInfo: function (form) {
+        let sessionData = AppHome.getSessionData();
+        let userId = sessionData.user.id;
+
+        $.ajax({
+            type: 'PUT',
+            contentType: "application/json",
+            url: "/users/" + userId,
+            data: JSON.stringify({
+                name: form.name.value,
+                email: form.email.value,
+                phone: form.phone.value,
+                passwordPrevious: form.passwordPrevious.value,
+                password: form.password.value
+            }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+
+                FlashMessage.show([
+                    ['success', 'Suas informações foram editadas com sucesso']
+                ]);
+
+                AppHome.s.modalAccountInfo.modal('hide');
+
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['danger', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+            }
+        });
+    },
+    // AJAX deleta contato da lista
+    processContactDelete: function () {
+        let sessionData = AppHome.getSessionData();
+        let userId = sessionData.user.id;
+        let contactId = sessionStorage.getItem('contactId');
+
+        $.ajax({
+            type: 'DELETE',
+            contentType: "application/json",
+            dataType: "json",
+            url: "/users/" + userId + "/contacts/" + contactId,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
+            },
+            success: function (response) {
+                AppHome.s.modalContactDelete.modal('hide');
+                AppHome.loadContactsList();
+                FlashMessage.show([
+                    ['success', 'Contato removido com sucesso']
+                ])
+            },
+            error: function (xhr, textStatus) {
+                switch (xhr.status) {
+                    default:
+                        FlashMessage.show([
+                            ['error', xhr.responseJSON.message]
+                        ]);
+                        break;
+                }
+            }
+        });
+    },
+
+
+    // constroi a tabela de contatos com base um uma lista de dados
     buildContactTable: function (data) {
         let colors = ['#e6194B', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#f032e6', '#469990', '#9A6324',
             '#800000', '#808000', '#000075', '#a9a9a9', '#000000'];
@@ -138,486 +825,46 @@ var AppHome = {
             i++;
         });
 
-        $('.contacts-table tbody').html(contactRowHtml);
+        AppHome.s.tableContactsBody.html(contactRowHtml);
     },
-    modalViewActions: function () {
-        let viewModal = $('#view-contact-modal');
-        let deleteModal = $('#delete-contact-modal');
-        let editModal = $('#edit-contact-modal');
-        let editButton = $('#view-contact-modal__edit-button');
-        let deleteButton = $('#view-contact-modal__remove-button');
 
-        editButton.click(function () {
-
-            viewModal.removeClass('fade');
-            editModal.removeClass('fade');
-            viewModal.modal('hide');
-            editModal.modal('show');
-
-            viewModal.addClass('fade');
-            editModal.addClass('fade');
-
-            AppHome.updateEditFormFields();
-
-        });
-
-        deleteButton.click(function () {
-
-            viewModal.removeClass('fade');
-            deleteModal.removeClass('fade');
-            viewModal.modal('hide');
-            deleteModal.modal('show');
-            viewModal.addClass('fade');
-            deleteModal.addClass('fade');
-
-            AppHome.updateModalContent(deleteModal);
-        });
-    },
-    flashAlertMessage: function ($arrayMessages) {
-        let alertContainer = $('.alert-container');
-
-        $arrayMessages.forEach((item) => {
-            let alertClass = item[0]; //success, danger, warning, info
-            let message = item[1]; //the message
-            let messageHtml = '<div class="alert alert-' + alertClass + '" role="alert">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-                '<span aria-hidden="true">&times;</span>' +
-                '</button>' +
-                '<span>' + message + '</span>' +
-                '</div>';
-            let messageElem = $(messageHtml);
-
-            alertContainer.prepend(messageElem);
-            window.setTimeout(function () {
-                messageElem.fadeTo(500, 0).slideUp(500, function () {
-                    $(this).remove();
-                });
-            }, 4000);
-        });
-    },
-    loadSession: function () {
-        let sessionData;
-        sessionData = JSON.parse(sessionStorage.getItem('user_session'));
-        if (!sessionData || !sessionData.user || !sessionData.user.id) {
-            window.location.href = '/';
-        }
-        return sessionData;
-    },
-    getUserData: function () {
-
-        let sessionData = AppHome.loadSession();
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json",
-            url: "/users/" + sessionData.user.id,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + sessionData.jwt);
-            },
-            success: function (response) {
-                let userName = response.data.name.split(' ')[0]; //firstname
-                $('#top-bar .user-name').html(userName);
-            },
-            error: function (xhr, textStatus) {
-                switch (xhr.status) {
-                    case 401:
-                        FlashMessage.show([
-                            ['danger', xhr.responseJSON.message]
-                        ]);
-                        setTimeout(function () {
-                            window.location.href = '/'
-                        }, 2000);
-                        break;
-                }
-
-            }
-        });
-
-    },
-    loadContacts: function () {
-        let sessionData = AppHome.loadSession();
-        let user_id = sessionData.user.id;
-        let loader = $('#loader');
-        loader.show();
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json",
-            dataType: "json",
-            url: "/users/" + user_id + "/contacts",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-            },
-            success: function (response) {
-                loader.hide();
-
-                AppHome.buildContactTable(response.data);
-            },
-            error: function (xhr, textStatus) {
-                loader.hide();
-                switch (xhr.status) {
-                    case 404:
-                        FlashMessage.show([
-                            ['success', 'Sua lista de contatos está vazia. Vamos começar']
-                        ]);
-                        AppHome.buildContactTable([]);
-                        break;
-                    default:
-                        FlashMessage.show([
-                            ['error', xhr.responseJSON.message]
-                        ]);
-                        break;
-
-                }
-
-            }
-        });
-
-    },
-    updateEditFormFields: function () {
-        let sessionData = AppHome.loadSession();
-        let contactId = sessionStorage.getItem('contactId');
-        let userId = sessionData.user.id;
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json",
-            dataType: "json",
-            url: "/users/" + userId + "/contacts/" + contactId,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-            },
-            success: function (response) {
-                let editContactForm = $('#editContactForm');
-                let addMorePhoneButton = $('.form-contact__btn--add-more-phones');
-
-                editContactForm.find('input[name="name"]').val(response.data.name);
-                editContactForm.find('input[name="email"]').val(response.data.email);
-                editContactForm.find('textarea[name="note"]').val(response.data.note);
-
-                for (let i = 0; i < response.data.phones.length; i++) {
-                    let index = i !== 0 ? i : '';
-
-                    if (editContactForm.find('input[name="inputPhone[' + index + ']"]').length === 0) {
-                        addMorePhoneButton.click();
-                    }
-
-                    editContactForm.find('input[name="inputPhone[' + index + ']"]').val(response.data.phones[i].phone);
-
-                }
-            },
-            error: function (xhr, textStatus) {
-                switch (xhr.status) {
-                    default:
-                        FlashMessage.show([
-                            ['error', xhr.responseJSON.message]
-                        ]);
-                        break;
-                }
-            }
-        });
-    },
-    updateAccountFormFields: function () {
-        let sessionData = AppHome.loadSession();
-        let userId = sessionData.user.id;
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json",
-            dataType: "json",
-            url: "/users/" + userId,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-            },
-            success: function (response) {
-                let accountInfoForm = $('#accountInfoForm');
-
-                accountInfoForm.find('input[name="name"]').val(response.data.name);
-                accountInfoForm.find('input[name="email"]').val(response.data.email);
-                accountInfoForm.find('input[name="phone"]').val(response.data.phone);
-
-                accountInfoForm.find('input[name="password"]').val('');
-                accountInfoForm.find('input[name="passwordPrevious"]').val('');
-                accountInfoForm.find('input[name="passwordConfirm"]').val('');
-
-                accountInfoForm.find('input[name="password"]').removeAttr('aria-invalid');
-                accountInfoForm.find('input[name="password"]').removeAttr('aria-describedby');
-                accountInfoForm.find('input[name="password"]').removeClass('is-invalid');
-                accountInfoForm.find('input[name="password"]').next('small').remove();
-
-                accountInfoForm.find('input[name="passwordPrevious"]').removeAttr('aria-invalid');
-                accountInfoForm.find('input[name="passwordPrevious"]').removeAttr('aria-describedby');
-                accountInfoForm.find('input[name="passwordPrevious"]').removeClass('is-invalid');
-                accountInfoForm.find('input[name="passwordPrevious"]').next('small').remove();
-
-                accountInfoForm.find('input[name="passwordConfirm"]').removeAttr('aria-invalid');
-                accountInfoForm.find('input[name="passwordConfirm"]').removeAttr('aria-describedby');
-                accountInfoForm.find('input[name="passwordConfirm"]').removeClass('is-invalid');
-                accountInfoForm.find('input[name="passwordConfirm"]').next('small').remove();
-
-            },
-            error: function (xhr, textStatus) {
-                switch (xhr.status) {
-                    default:
-                        FlashMessage.show([
-                            ['error', xhr.responseJSON.message]
-                        ]);
-                        break;
-                }
-            }
-        });
-    },
-    updateModalContent: function (modal) {
-        let sessionData = AppHome.loadSession();
-        let userId = sessionData.user.id;
-        let contactId = sessionStorage.getItem('contactId');
-        $.ajax({
-            type: 'GET',
-            contentType: "application/json",
-            dataType: "json",
-            url: "/users/" + userId + "/contacts/" + contactId,
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-            },
-            success: function (response) {
-                let phonesNotesHtml = '';
-
-                phonesNotesHtml += '<div class="mb-4">' +
-                    '<h5>' + response.data.name + '</h5>' +
-                    '</div>';
-
-                if (response.data.email) {
-                    phonesNotesHtml += '<p>' +
-                        '<div class="float-left pr-3 text-right" ><span class="oi oi-envelope-closed' +
-                        ' text-muted"></span></div>' +
-                        '<a href="mailto:' + response.data.email + '" class="">' + response.data.email + '</a>' +
-                        '</p>';
-                }
-
-                for (let i = 0; i < response.data.phones.length; i++) {
-                    let numberOnlyPhone = response.data.phones[i].phone.replace(' ', '').replace('-', '');
-                    phonesNotesHtml += '<p>' +
-                        '<div class="float-left pr-3 text-right" ><span class="oi oi-phone' +
-                        ' text-muted"></span></div>' +
-                        '<a href="tel:' + numberOnlyPhone + '">' +
-                        response.data.phones[i].phone +
-                        '</a>' +
-                        '</p>';
-                }
-
-                if (response.data.note) {
-                    phonesNotesHtml += '<p>' +
-                        '<div class="float-left pr-3 text-right"><span class="oi oi-book' +
-                        ' text-muted"></span></div>' +
-                        response.data.note +
-                        '</p>';
-                }
-
-                modal.find('.view-contact-data').html(phonesNotesHtml);
-            },
-            error: function (xhr, textStatus) {
-                switch (xhr.status) {
-                    default:
-                        FlashMessage.show([
-                            ['error', xhr.responseJSON.message]
-                        ]);
-                        break;
-                }
-            }
-        });
-    },
-    loadDataForViewContactModal: function () {
-        let viewContactModal = $('#view-contact-modal');
-        viewContactModal.on('show.bs.modal', function (event) {
-            let modal = $(event.target);
-            let dataContainer;
-            if (event.relatedTarget !== undefined) {
-                dataContainer = $(event.relatedTarget.closest('tr'));
-                sessionStorage.setItem('contactId', dataContainer.data('id'));
-            }
-
-            AppHome.updateModalContent(modal);
-        });
-    },
-    loadDataForEditContactModal: function () {
-
-        let editContactModal = $('#edit-contact-modal');
-        editContactModal.on('show.bs.modal', function (event) {
-            if (event.relatedTarget !== undefined) {
-                dataContainer = $(event.relatedTarget.closest('tr'));
-                sessionStorage.setItem('contactId', dataContainer.data('id'));
-            }
-
-            AppHome.updateEditFormFields();
-        });
-    },
-    loadDataForDeleteContactModal: function () {
-        let deleteContactModal = $('#delete-contact-modal');
-        deleteContactModal.on('show.bs.modal', function (event) {
-            let modal = $('#delete-contact-modal');
-            if (event.relatedTarget !== undefined) {
-                dataContainer = $(event.relatedTarget.closest('tr'));
-                sessionStorage.setItem('contactId', dataContainer.data('id'));
-            }
-            AppHome.updateModalContent(modal);
-        });
-    },
-    loadDataForAccountInfoModal: function () {
-
-        let accountInfoModal = $('#account-info-modal');
-        accountInfoModal.on('show.bs.modal', function (event) {
-
-            AppHome.updateAccountFormFields();
-        });
-    },
-    resetModalAfterHide: function () {
-        $('#edit-contact-modal').on('hide.bs.modal', function (e) {
-            AppHome.clearForms();
-        });
-        $('#add-contact-modal').on('hide.bs.modal', function (e) {
-            AppHome.clearForms();
-        });
-        $('#delete-contact-modal').on('hide.bs.modal', function (e) {
-            AppHome.clearDeleteContactData();
-        });
-    },
+    // limpa os dados que estavam no modal de deletar
     clearDeleteContactData: function () {
         let loadingHtml = '<div class="text-center">' +
             '<img src="/images/loading-spinner.svg" alt="" width="100">' +
             '</div>'
-        $('#delete-contact-modal').find('.view-contact-data').html(loadingHtml);
+        AppHome.s.modalContactDelete.find('.view-contact-data').html(loadingHtml);
     },
+
+    // limpa os formulários de editar e adicionar contatos
     clearForms: function () {
-        let editContactForm = $('#editContactForm');
-        let addContactForm = $('#addContactForm');
-
-        [editContactForm, addContactForm].forEach(function (formElement) {
+        [AppHome.s.formContactEdit, AppHome.s.formContactAdd].forEach(function (formElement) {
             $(formElement).find('.phone--remove').click();
-            $(formElement).find('input[name="inputPhone[]"]').val('');
-            $(formElement).find('input[name="name"]').val('');
-            $(formElement).find('input[name="email"]').val('');
-            $(formElement).find('textarea[name="note"]').val('');
+            $(formElement)[0].reset();
 
-            $(formElement).find('input[name="inputPhone[]"]').removeAttr('aria-invalid');
-            $(formElement).find('input[name="inputPhone[]"]').removeAttr('aria-describedby');
-            $(formElement).find('input[name="inputPhone[]"]').removeClass('is-invalid');
-            $(formElement).find('input[name="inputPhone[]"]').next('small').remove();
-
-            $(formElement).find('input[name="name"]').removeAttr('aria-invalid');
-            $(formElement).find('input[name="name"]').removeAttr('aria-describedby');
-            $(formElement).find('input[name="name"]').removeClass('is-invalid');
-            $(formElement).find('input[name="name"]').next('small').remove();
-
-            $(formElement).find('input[name="email"]').removeAttr('aria-invalid');
-            $(formElement).find('input[name="email"]').removeAttr('aria-describedby');
-            $(formElement).find('input[name="email"]').removeClass('is-invalid');
-            $(formElement).find('input[name="email"]').next('small').remove();
-        });
-    }
-
-};
-
-/*
-*
-*  Form dynamics, validations and masks
-*
-* */
-var ContactForms = {
-    addContactForm: $('#addContactForm'),
-    editContactForm: $('#editContactForm'),
-    accountInfoForm: $('#accountInfoForm'),
-
-    init: function () {
-        ContactForms.dynamicPhone();
-        ContactForms.maskPhone();
-        ContactForms.maskPhone($('#accountInputPhone'));
-        ContactForms.validateAddContactForm();
-        ContactForms.validateEditContactForm();
-        ContactForms.validateAccountInfoForm();
-        ContactForms.deleteContactHandle();
-    },
-    dynamicPhone: function () {
-        let addMorePhoneButton = $('.form-contact__btn--add-more-phones');
-
-        addMorePhoneButton.click(function (event) {
-            event.preventDefault();
-            let removeHtml = '<button type="button" class="phone--remove btn btn-light"><span class="oi oi-x' +
-                ' text-danger"></span></button>';
-            let removeButton = $(removeHtml);
-            let container = $(this).closest('.row').prev();
-            let nextChildIdNumber = container.children().length;
-            let clonedPhoneField = container.children().first().clone();
-            let inputPhoneField = clonedPhoneField.find('input');
-
-            //prepare new phone input field
-            inputPhoneField.attr('name', 'inputPhone[' + nextChildIdNumber + ']');
-            inputPhoneField.removeAttr('aria-invalid');
-            inputPhoneField.removeAttr('aria-describedby');
-            inputPhoneField.val('');
-            inputPhoneField.removeClass('is-invalid');
-            inputPhoneField.next('small').remove();
-            inputPhoneField.parent().prev().remove();
-
-            ContactForms.maskPhone(inputPhoneField);
-
-            clonedPhoneField.find('.input-group').append(removeButton);
-            container.append(clonedPhoneField);
-
-            inputPhoneField.rules('add',
-                {
-                    minlength: 12,
-                    messages: {
-                        minlength: "Telefone incompleto"
-                    }
-                });
-
-            ContactForms.attachDelete();
-            inputPhoneField.focus();
-
-            ContactForms.addContactForm.validate();
-        });
-    },
-    deleteContactHandle: function () {
-        $('#deleteContactButton').click(function (event) {
-            let sessionData = AppHome.loadSession();
-            let userId = sessionData.user.id;
-            let contactId = sessionStorage.getItem('contactId');
-            let deleteContactModal = $('#delete-contact-modal');
-
-            $.ajax({
-                type: 'DELETE',
-                contentType: "application/json",
-                dataType: "json",
-                url: "/users/" + userId + "/contacts/" + contactId,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-                },
-                success: function (response) {
-                    deleteContactModal.modal('hide');
-                    AppHome.loadContacts();
-                    FlashMessage.show([
-                        ['success', 'Contato removido com sucesso']
-                    ])
-                },
-                error: function (xhr, textStatus) {
-                    switch (xhr.status) {
-                        default:
-                            FlashMessage.show([
-                                ['error', xhr.responseJSON.message]
-                            ]);
-                            break;
-                    }
-                }
+            $(formElement).find('input.is-invalid').each(function () {
+                $(this).removeAttr('aria-invalid');
+                $(this).removeAttr('aria-describedby');
+                $(this).removeClass('is-invalid');
+                $(this).removeClass('is-invalid');
+                $(this).next('small').remove();
             });
-
-
         });
     },
-    attachDelete: function () {
+
+    // adiciona botão de deletar aos campos de telefone dinâmicos
+    attachButtonDeletePhone: function () {
+        // é necessário chamar o seletor aqui para que ele pegue os campos dinâmicos
         let deletePhoneButtons = $('.phone--remove');
         deletePhoneButtons.off();
         deletePhoneButtons.click(function () {
             $(this).closest('.row').remove();
         });
     },
+
+    // mascara de telefone
     maskPhone: function (field) {
-        let phoneInput = field || $('input[name="inputPhone[]"]');
+        let phoneInput = field || AppHome.s.inputPhones;
         phoneInput.mask('00 0000-00000', {
             onKeyPress: function (phoneNumber, e, field, options) {
                 let masks = ['00 0000-00000', '00 00000-0000'];
@@ -627,288 +874,18 @@ var ContactForms = {
         });
     },
 
-    validateAddContactForm: function () {
-        ContactForms.addContactForm.validate({
-            rules: {
-                name: 'required',
-                email: {
-                    email: true,
-                },
-                'inputPhone[]': {
-                    minlength: 12,
-                },
-                password: 'required',
-            },
-            messages: {
-                name: 'Campo requerido',
-                email: {
-                    email: 'E-mail inválido',
-                },
-                'inputPhone[]': {
-                    minlength: 'Telefone incompleto',
-                },
-                password: 'Campo requerido',
-            },
-            errorElement: 'small',
-            errorClass: 'is-invalid',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                if (element.next('button').length !== 0)
-                    error.appendTo($(element.parent()));
-                else
-                    error.insertAfter(element);
-            },
-            highlight: function (element, errorClass, validClass) {
-                $(element).addClass(errorClass);
-            },
-            unhighlight: function (element, errorClass, validClass) {
-                $(element).removeClass(errorClass);
-            },
-            submitHandler: function (form) {
-                let sessionData = AppHome.loadSession();
-                let userId = sessionData.user.id;
-                let phones = [];
-
-                $(form).find('input[name^="inputPhone"]').each(function () {
-                    phones.push($(this).val());
-                });
-
-                $.ajax({
-                    type: 'POST',
-                    contentType: "application/json",
-                    url: "/users/" + userId + "/contacts",
-                    data: JSON.stringify({
-                        name: form.name.value,
-                        email: form.email.value,
-                        phones: phones,
-                        note: form.note.value
-                    }),
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-                    },
-                    success: function (response) {
-                        sessionStorage.setItem('contactId', response.data.contactId);
-
-                        FlashMessage.show([
-                            ['success', 'Contato criado com sucesso']
-                        ]);
-
-                        let viewModal = $('#view-contact-modal');
-                        let addModal = $('#add-contact-modal');
-
-                        AppHome.loadContacts();
-                        addModal.removeClass('fade');
-                        viewModal.removeClass('fade');
-                        addModal.modal('hide');
-                        viewModal.modal('show');
-                        addModal.addClass('fade');
-                        viewModal.addClass('fade');
-
-                    },
-                    error: function (xhr, textStatus) {
-                        switch (xhr.status) {
-                            default:
-                                FlashMessage.show([
-                                    ['danger', xhr.responseJSON.message]
-                                ]);
-                                break;
-                        }
-
-                    }
-                });
-            }
-        });
-    },
-
-    validateEditContactForm: function () {
-        ContactForms.editContactForm.validate({
-            rules: {
-                name: 'required',
-                email: {
-                    email: true,
-                },
-                'inputPhone[]': {
-                    minlength: 12,
-                },
-                password: 'required',
-            },
-            messages: {
-                name: 'Campo requerido',
-                email: {
-                    email: 'E-mail inválido',
-                },
-                'inputPhone[]': {
-                    minlength: 'Telefone incompleto',
-                },
-                password: 'Campo requerido',
-            },
-            errorElement: 'small',
-            errorClass: 'is-invalid',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                if (element.next('button').length !== 0)
-                    error.appendTo($(element.parent()));
-                else
-                    error.insertAfter(element);
-            },
-            highlight: function (element, errorClass, validClass) {
-                $(element).addClass(errorClass);
-            },
-            unhighlight: function (element, errorClass, validClass) {
-                $(element).removeClass(errorClass);
-            },
-            submitHandler: function (form) {
-                let sessionData = AppHome.loadSession();
-                let userId = sessionData.user.id;
-                let contactId = sessionStorage.getItem('contactId');
-                let phones = [];
-
-                $(form).find('input[name^="inputPhone"]').each(function () {
-                    phones.push($(this).val());
-                });
-
-                $.ajax({
-                    type: 'PUT',
-                    contentType: "application/json",
-                    url: "/users/" + userId + "/contacts/" + contactId,
-                    data: JSON.stringify({
-                        name: form.name.value,
-                        email: form.email.value,
-                        phones: phones,
-                        note: form.note.value
-                    }),
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-                    },
-                    success: function (response) {
-                        sessionStorage.setItem('contactId', response.data.contactId);
-
-                        FlashMessage.show([
-                            ['success', 'Contato editado com sucesso']
-                        ]);
-
-                        let viewModal = $('#view-contact-modal');
-                        let editModal = $('#edit-contact-modal');
-
-                        AppHome.loadContacts();
-                        editModal.removeClass('fade');
-                        viewModal.removeClass('fade');
-                        editModal.modal('hide');
-                        viewModal.modal('show');
-                        editModal.addClass('fade');
-                        viewModal.addClass('fade');
-
-                    },
-                    error: function (xhr, textStatus) {
-                        switch (xhr.status) {
-                            default:
-                                FlashMessage.show([
-                                    ['danger', xhr.responseJSON.message]
-                                ]);
-                                break;
-                        }
-
-                    }
-                });
-            }
-        });
-    },
-
-    validateAccountInfoForm: function () {
-        ContactForms.accountInfoForm.validate({
-            rules: {
-                name: 'required',
-                email: {
-                    required: true,
-                    email: true,
-                },
-                phone: {
-                    required: true,
-                    minlength: 12,
-                },
-                passwordPrevious: 'required',
-                password: 'required',
-                passwordConfirm: {
-                    required: true,
-                    equalTo: '#accountInputPassword',
-                },
-            },
-            messages: {
-                name: 'Campo requerido',
-                email: {
-                    required: 'Campo requerido',
-                    email: 'E-mail inválido',
-                },
-                phone: {
-                    required: 'Campo requerido',
-                    minlength: 'Telefone incompleto',
-                },
-                passwordPrevious: 'Campo requerido',
-                password: 'Campo requerido',
-                passwordConfirm: {
-                    required: 'Campo requerido',
-                    equalTo: 'Senhas não conferem',
-                },
-            },
-            errorElement: 'small',
-            errorClass: 'is-invalid',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                error.insertAfter(element);
-            },
-            highlight: function (element, errorClass, validClass) {
-                $(element).addClass(errorClass);
-            },
-            unhighlight: function (element, errorClass, validClass) {
-                $(element).removeClass(errorClass);
-            },
-            submitHandler: function (form) {
-                let sessionData = AppHome.loadSession();
-                let userId = sessionData.user.id;
-
-                $.ajax({
-                    type: 'PUT',
-                    contentType: "application/json",
-                    url: "/users/" + userId,
-                    data: JSON.stringify({
-                        name: form.name.value,
-                        email: form.email.value,
-                        phone: form.phone.value,
-                        passwordPrevious: form.passwordPrevious.value,
-                        password: form.password.value
-                    }),
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.loadSession().jwt);
-                    },
-                    success: function (response) {
-
-                        FlashMessage.show([
-                            ['success', 'Suas informações foram editadas com sucesso']
-                        ]);
-
-                        let accountInfoModal = $('#account-info-modal');
-                        accountInfoModal.modal('hide');
-
-                    },
-                    error: function (xhr, textStatus) {
-                        switch (xhr.status) {
-                            default:
-                                FlashMessage.show([
-                                    ['danger', xhr.responseJSON.message]
-                                ]);
-                                break;
-                        }
-                    }
-                });
-
-            }
-        });
-    },
-
-
+    // carrega dados da sessão que estão no local storage
+    getSessionData: function () {
+        let sessionData;
+        sessionData = JSON.parse(sessionStorage.getItem('user_session'));
+        if (!sessionData || !sessionData.user || !sessionData.user.id) {
+            window.location.href = '/';
+        }
+        return sessionData;
+    }
 };
+
 
 $(document).ready(function () {
     AppHome.init();
-    ContactForms.init();
 });

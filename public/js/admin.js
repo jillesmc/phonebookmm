@@ -1,18 +1,35 @@
 var Admin = {
+    s: {
+        buttonLogout: $('#logout'),
+        containerUsersTotal: $('#users_total'),
+        containerContactsTotal: $('#contacts_total'),
+        containerUsersTotalLastMonth: $('#users_total_last_month'),
+        containerContactsTotalLastMonth: $('#contacts_total_last_month'),
+
+        containerGraphNewUsers: $('#newUsersFromPastFifteenDays'),
+        containerGraphNewContacts: $('#newContactsFromPastFifteenDays'),
+        containerGraphUsersDDD: $('#usersDDD'),
+        containerGraphContactsDDD: $('#contactsDDD')
+    },
+
     init: function () {
         Admin.bindActions();
+
+        // AJAX load data
         Admin.getUserData();
         Admin.getDashboarData();
+
+        // build graph
         Admin.newUsersChart();
         Admin.newContactsChart();
         Admin.usersDDDChart();
         Admin.contactsDDDChart();
     },
-    bindActions: function(){
-      $('#logout').click(function () {
-          sessionStorage.clear();
-          window.location.href = '/admin'
-      });
+    bindActions: function () {
+        Admin.s.buttonLogout.click(function () {
+            sessionStorage.clear();
+            window.location.href = '/admin'
+        });
     },
     loadSession: function () {
         let sessionData;
@@ -47,7 +64,7 @@ var Admin = {
         });
 
     },
-    getDashboarData: function(){
+    getDashboarData: function () {
         $.ajax({
             type: 'GET',
             contentType: "application/json",
@@ -61,14 +78,13 @@ var Admin = {
                 let labels = [];
                 let data = [];
 
-                $('#users_total').html(response.data.users.total);
-                $('#contacts_total').html(response.data.contacts.total);
-                $('#users_total_last_month').html(response.data.users_last_month.total);
-                $('#contacts_total_last_month').html(response.data.contacts_last_month.total);
+                Admin.s.containerUsersTotal.html(response.data.users.total);
+                Admin.s.containerContactsTotal.html(response.data.contacts.total);
+                Admin.s.containerUsersTotalLastMonth.html(response.data.users_last_month.total);
+                Admin.s.containerContactsTotalLastMonth.html(response.data.contacts_last_month.total);
 
 
-
-                for(let i = 0; i < response.data.users_last_fifteen_days_per_day.length; i++){
+                for (let i = 0; i < response.data.users_last_fifteen_days_per_day.length; i++) {
                     labels.push(response.data.users_last_fifteen_days_per_day[i].day);
                     data.push(response.data.users_last_fifteen_days_per_day[i].total);
                 }
@@ -76,7 +92,7 @@ var Admin = {
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.data.contacts_last_fifteen_days_per_day.length; i++){
+                for (let i = 0; i < response.data.contacts_last_fifteen_days_per_day.length; i++) {
                     labels.push(response.data.contacts_last_fifteen_days_per_day[i].day);
                     data.push(response.data.contacts_last_fifteen_days_per_day[i].total);
                 }
@@ -84,7 +100,7 @@ var Admin = {
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.data.users_per_zone_code.length; i++){
+                for (let i = 0; i < response.data.users_per_zone_code.length; i++) {
                     labels.push(response.data.users_per_zone_code[i].zone_code);
                     data.push(response.data.users_per_zone_code[i].total);
                 }
@@ -92,7 +108,7 @@ var Admin = {
 
                 labels = [];
                 data = [];
-                for(let i = 0; i < response.data.contacts_per_zone_code.length; i++){
+                for (let i = 0; i < response.data.contacts_per_zone_code.length; i++) {
                     labels.push(response.data.contacts_per_zone_code[i].zone_code);
                     data.push(response.data.contacts_per_zone_code[i].total);
                 }
@@ -127,7 +143,7 @@ var Admin = {
             }
         };
 
-        let canvas = $('#newUsersFromPastFifteenDays');
+        let canvas = Admin.s.containerGraphNewUsers;
         let chart = new Chart(canvas, {
             type: 'line',
             data: subscriptionData,
@@ -155,7 +171,7 @@ var Admin = {
             }
         };
 
-        let canvas = $('#newContactsFromPastFifteenDays');
+        let canvas = Admin.s.containerGraphNewContacts;
         let chart = new Chart(canvas, {
             type: 'line',
             data: insertionData,
@@ -182,7 +198,7 @@ var Admin = {
             }
         };
 
-        let canvas = $('#usersDDD');
+        let canvas = Admin.s.containerGraphUsersDDD;
         let chart = new Chart(canvas, {
             type: 'bar',
             data: usersDDDData,
@@ -211,7 +227,7 @@ var Admin = {
             }
         };
 
-        let canvas = $('#contactsDDD');
+        let canvas = Admin.s.containerGraphContactsDDD;
         let chart = new Chart(canvas, {
             type: 'bar',
             data: contactsDDDData,
