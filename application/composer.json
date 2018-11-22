@@ -2,7 +2,6 @@
     "name": "jilles/phone-book-mm",
     "description": "PhoneBook",
     "type": "project",
-    "license": "MIT",
     "authors": [
         {
             "name": "Jilles Cardoso",
@@ -19,7 +18,6 @@
         "php": ">=7.1",
         "ext-pdo": "*",
         "ext-json": "*",
-        "firebase/php-jwt": "^5.0",
-        "ext-apache": "*"
+        "firebase/php-jwt": "^5.0"
     }
 }
