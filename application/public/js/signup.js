@@ -55,7 +55,7 @@ var Signup = {
                 $.ajax({
                     type: 'POST',
                     contentType: "application/json",
-                    url: "/users",
+                    url: "/api/users",
                     data: JSON.stringify({
                         name: form.name.value,
                         email: form.email.value,

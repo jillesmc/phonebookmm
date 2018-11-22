@@ -44,7 +44,7 @@ var Admin = {
         $.ajax({
             type: 'GET',
             contentType: "application/json",
-            url: "/admin/users/" + sessionData.admin.id,
+            url: "/api/admin/users/" + sessionData.admin.id,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + Admin.loadSession().jwt);
             },
@@ -69,7 +69,7 @@ var Admin = {
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            url: "/admin/data",
+            url: "/api/admin/data",
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + Admin.loadSession().jwt);
             },

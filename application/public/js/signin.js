@@ -37,7 +37,7 @@ var Signin = {
                 $.ajax({
                     type: 'POST',
                     contentType: "application/json",
-                    url: "/login/auth",
+                    url: "/api/login/auth",
                     data: JSON.stringify({
                         email : form.email.value,
                         password : form.password.value

@@ -347,7 +347,7 @@ var AppHome = {
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            url: "/users/" + user_id + "/contacts",
+            url: "/api/users/" + user_id + "/contacts",
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -390,7 +390,7 @@ var AppHome = {
             contentType: "application/json",
             dataType: "json",
             data: {'q': query},
-            url: "/users/" + userId + "/contacts",
+            url: "/api/users/" + userId + "/contacts",
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -425,7 +425,7 @@ var AppHome = {
         $.ajax({
             type: 'GET',
             contentType: "application/json",
-            url: "/users/" + AppHome.getSessionData().user.id,
+            url: "/api/users/" + AppHome.getSessionData().user.id,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -458,7 +458,7 @@ var AppHome = {
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            url: "/users/" + userId + "/contacts/" + contactId,
+            url: "/api/users/" + userId + "/contacts/" + contactId,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -518,7 +518,7 @@ var AppHome = {
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            url: "/users/" + userId + "/contacts/" + contactId,
+            url: "/api/users/" + userId + "/contacts/" + contactId,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -557,7 +557,7 @@ var AppHome = {
             type: 'GET',
             contentType: "application/json",
             dataType: "json",
-            url: "/users/" + userId,
+            url: "/api/users/" + userId,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
@@ -604,7 +604,7 @@ var AppHome = {
         $.ajax({
             type: 'POST',
             contentType: "application/json",
-            url: "/users/" + userId + "/contacts",
+            url: "/api/users/" + userId + "/contacts",
             data: JSON.stringify({
                 name: form.name.value,
                 email: form.email.value,
@@ -657,7 +657,7 @@ var AppHome = {
         $.ajax({
             type: 'PUT',
             contentType: "application/json",
-            url: "/users/" + userId + "/contacts/" + contactId,
+            url: "/api/users/" + userId + "/contacts/" + contactId,
             data: JSON.stringify({
                 name: form.name.value,
                 email: form.email.value,
@@ -705,7 +705,7 @@ var AppHome = {
         $.ajax({
             type: 'PUT',
             contentType: "application/json",
-            url: "/users/" + userId,
+            url: "/api/users/" + userId,
             data: JSON.stringify({
                 name: form.name.value,
                 email: form.email.value,
@@ -746,7 +746,7 @@ var AppHome = {
             type: 'DELETE',
             contentType: "application/json",
             dataType: "json",
-            url: "/users/" + userId + "/contacts/" + contactId,
+            url: "/api/users/" + userId + "/contacts/" + contactId,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('Authorization', 'BEARER ' + AppHome.getSessionData().jwt);
             },
