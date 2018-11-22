@@ -2,7 +2,7 @@
 return [
     'driver' => 'mysql',
     'mysql' => [
-        'host' => 'localhost',
+        'host' => 'phonebook.com.br',
         'database' => 'phonebook',
         'user' => 'root',
         'pass' => '',

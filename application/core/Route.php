@@ -78,7 +78,7 @@ class Route
      */
     private function getRequestContentType()
     {
-        return $_SERVER['HTTP_CONTENT_TYPE'] ?? null;
+        return $_SERVER['CONTENT_TYPE'] ?? null;
     }
 
     /**

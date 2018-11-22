@@ -1,0 +1,27 @@
+version: '2'
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: .docker/app.Dockerfile
+    working_dir: /var/www/html/
+    volumes:
+      - ./application/:/var/www/html/
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+    - phonebook.com.br
+
+  phonebook.com.br:
+    image: mysql:5.6
+    volumes:
+    - db:/var/lib/mysql
+    environment:
+    - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+    - "MYSQL_DATABASE=phonebook"
+    - "MYSQL_ROOT_PASSWORD="
+    ports:
+    - "3306:3306"
+volumes:
+  db:
