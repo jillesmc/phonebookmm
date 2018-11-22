@@ -53,7 +53,7 @@ class UserController extends BaseController
         }
         return Response::json(Response::OK, [
             'status' => 'success',
-            'message' => 'Acesso não autorizado',
+            'message' => 'Acesso autorizado',
             'data' => $user
         ]);
     }
